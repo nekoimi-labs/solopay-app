@@ -160,12 +160,9 @@ android {
             // 调试模式开关
             debuggable true
             jniDebuggable true
-            // 移除无用的资源
-            shrinkResources true
-            // 代码混淆开关
-            minifyEnabled true
-            // 混淆配置
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            // debug 不开 R8，避免 XRouter transform 产物与 kotlin-stdlib 重复类冲突
+            shrinkResources false
+            minifyEnabled false
             if (useReleaseSigning) {
                 signingConfig signingConfigs.release
                 if (file('local.properties').exists()) {

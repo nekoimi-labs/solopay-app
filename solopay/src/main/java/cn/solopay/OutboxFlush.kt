@@ -19,14 +19,23 @@ suspend fun flushOutbox(context: Context) {
         val resp = try {
             client.postSignal(row.bodyJson)
         } catch (e: Exception) {
-            dao.updateStatus(row.id, SignalOutboxEntity.STATUS_FAILED, now, e.message)
+            dao.updateStatus(row.id, SignalOutboxEntity.STATUS_FAILED, now, e.message ?: "network_error")
             continue
         }
         when {
             resp.isUnauthorized -> {
+                dao.markAllPendingAsFailed(
+                    SignalOutboxEntity.STATUS_PENDING,
+                    SignalOutboxEntity.STATUS_FAILED,
+                    now,
+                    "device_revoked",
+                )
                 creds.clear()
-                dao.updateStatus(row.id, SignalOutboxEntity.STATUS_FAILED, now, "unauthorized")
                 return
+            }
+
+            resp.httpStatus == 409 -> {
+                dao.updateStatus(row.id, SignalOutboxEntity.STATUS_SENT, now, null)
             }
 
             resp.httpStatus in 200..299 && (resp.businessCode == null || resp.businessCode == 0) -> {

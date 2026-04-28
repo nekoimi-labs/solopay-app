@@ -1,7 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <style name="SoloPayTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <item name="colorPrimary">#1677FF</item>
-        <item name="android:statusBarColor">#1677FF</item>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="SoloPayTheme" parent="XUITheme.Phone">
+        <item name="colorPrimary">@color/solopay_color_primary</item>
+        <item name="colorPrimaryDark">@color/solopay_color_primary_dark</item>
+        <item name="colorAccent">@color/solopay_color_accent</item>
+        <item name="xui_actionbar_height">?actionBarSize</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <style name="SoloPayScrollViewStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:overScrollMode">never</item>
+    </style>
+
+    <style name="SoloPayXUILayout">
+        <item name="xui_borderWidth">0dp</item>
+        <item name="xui_radius">8dp</item>
+        <item name="xui_shadowElevation">6dp</item>
+        <item name="android:background">@color/xui_config_color_white</item>
+    </style>
+
+    <style name="SoloPayBarStyle">
+        <item name="android:layout_marginTop">5dp</item>
+        <item name="android:layout_marginStart">5dp</item>
+        <item name="android:layout_marginEnd">5dp</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:background">@drawable/solopay_rounded_bar_bg</item>
+        <item name="android:gravity">center_vertical</item>
+    </style>
+
+    <style name="SoloPayBarTitleStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">5dp</item>
+        <item name="android:layout_marginTop">10dp</item>
+        <item name="android:layout_marginEnd">5dp</item>
+        <item name="android:gravity">bottom</item>
+        <item name="android:orientation">horizontal</item>
+    </style>
+
+
+    <!-- AppCompat / XUI 主题下勿用 Widget.MaterialComponents.TabLayout，会缺少 colorSurface 等导致 inflate 崩溃 -->
+    <style name="SoloPayTabLayoutStyle" parent="Widget.Design.TabLayout">
+        <item name="tabIndicatorColor">@color/solopay_color_primary</item>
+        <item name="tabIndicatorHeight">2dp</item>
+        <item name="tabPaddingStart">12dp</item>
+        <item name="tabPaddingEnd">12dp</item>
+        <item name="tabTextAppearance">@style/SoloPayTabText</item>
+        <item name="tabSelectedTextColor">@color/solopay_color_primary</item>
+        <item name="tabTextColor">@color/solopay_tab_text_selector</item>
+    </style>
+
+    <style name="SoloPayTabText" parent="TextAppearance.Design.Tab">
+        <item name="android:textColor">@color/solopay_tab_text_selector</item>
+        <item name="android:textSize">?attr/xui_config_size_explain_text</item>
+    </style>
+
+    <style name="SoloPaySeparatorVertical">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">#1F000000</item>
     </style>
 </resources>

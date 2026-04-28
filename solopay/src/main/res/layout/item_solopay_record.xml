@@ -1,7 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/solopay_record_line"
+<com.xuexiang.xui.widget.layout.XUIFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/SoloPayXUILayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="12dp"
-    android:textSize="14sp" />
+    android:layout_marginBottom="8dp"
+    android:padding="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/solopay_record_line1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/xui_config_color_title_text"
+            android:textSize="14sp"
+            tools:text="2026-01-01 12:00  ¥12.34  微信  已上报" />
+
+        <TextView
+            android:id="@+id/solopay_record_error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/xui_config_color_red"
+            android:textSize="12sp"
+            android:visibility="gone"
+            tools:text="错误信息"
+            tools:visibility="visible" />
+    </LinearLayout>
+</com.xuexiang.xui.widget.layout.XUIFrameLayout>

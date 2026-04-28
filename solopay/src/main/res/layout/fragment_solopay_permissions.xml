@@ -1,40 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:background="?attr/xui_config_color_background"
+    android:orientation="vertical">
 
-    <LinearLayout
+    <com.xuexiang.xui.widget.actionbar.TitleBar
+        android:id="@+id/solopay_title_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="wrap_content" />
 
-        <TextView
+    <androidx.core.widget.NestedScrollView style="@style/SoloPayScrollViewStyle">
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="为正常接收微信 / 支付宝收款通知，请依次完成："
-            android:textSize="15sp" />
+            android:layout_margin="12dp"
+            android:orientation="vertical">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/solopay_btn_notif_listener"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="打开「通知使用权」设置" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/solopay_perm_intro"
+                android:textColor="@color/xui_config_color_content_text"
+                android:textSize="15sp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/solopay_btn_battery"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="忽略电池优化（建议）" />
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/solopay_btn_notif_listener"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/solopay_perm_notif_listener"
+                android:textColor="@android:color/white"
+                app:backgroundTint="@color/solopay_color_primary" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/solopay_btn_autostart_hint"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="自启动 / 后台运行说明" />
-    </LinearLayout>
-</ScrollView>
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/solopay_btn_battery"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/solopay_perm_battery"
+                android:textColor="@android:color/white"
+                app:backgroundTint="@color/solopay_color_primary" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/solopay_btn_post_notifications"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/solopay_perm_post_notifications"
+                android:textColor="@android:color/white"
+                app:backgroundTint="@color/solopay_color_primary" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/solopay_btn_autostart_hint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/solopay_btn_outlined"
+                android:text="@string/solopay_perm_autostart"
+                android:textColor="@color/solopay_color_primary" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</LinearLayout>

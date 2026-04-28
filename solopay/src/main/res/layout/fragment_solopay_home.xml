@@ -1,63 +1,116 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:background="?attr/xui_config_color_background"
+    android:orientation="vertical"
+    tools:ignore="TooManyViews">
 
-    <LinearLayout
+    <com.xuexiang.xui.widget.actionbar.TitleBar
+        android:id="@+id/solopay_title_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="wrap_content" />
 
-        <TextView
+    <androidx.core.widget.NestedScrollView style="@style/SoloPayScrollViewStyle">
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="今日已上报收款（分）"
-            android:textSize="14sp"
-            android:textColor="#666666" />
+            android:layout_margin="5dp"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/solopay_today_cents"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="—"
-            android:textSize="28sp"
-            android:textColor="#1677FF"
-            android:textStyle="bold" />
+            <LinearLayout style="@style/SoloPayBarTitleStyle">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="@string/solopay_status_bound"
-            android:textSize="14sp"
-            android:textColor="#666666" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/solopay_section_today"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
-        <TextView
-            android:id="@+id/solopay_bound_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="—"
-            android:textSize="16sp" />
+            <com.xuexiang.xui.widget.layout.XUIFrameLayout
+                style="@style/SoloPayXUILayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:padding="14dp">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="最近记录（最多 3 条）"
-            android:textSize="14sp"
-            android:textColor="#666666" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/solopay_recent_lines"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:fontFamily="sans-serif"
-            android:lineSpacingExtra="4dp"
-            android:text="—"
-            android:textSize="14sp" />
-    </LinearLayout>
-</ScrollView>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/solopay_today_amount_hint"
+                        android:textColor="@color/xui_config_color_explain_text"
+                        android:textSize="12sp"
+                        tools:ignore="SmallSp" />
+
+                    <TextView
+                        android:id="@+id/solopay_today_cents"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="—"
+                        android:textColor="@color/solopay_color_primary"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.xuexiang.xui.widget.layout.XUIFrameLayout>
+
+            <LinearLayout style="@style/SoloPayBarTitleStyle">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/solopay_status_bound"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <com.xuexiang.xui.widget.layout.XUIFrameLayout
+                style="@style/SoloPayXUILayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:padding="14dp">
+
+                <TextView
+                    android:id="@+id/solopay_bound_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="—"
+                    android:textColor="@color/xui_config_color_title_text"
+                    android:textSize="16sp" />
+            </com.xuexiang.xui.widget.layout.XUIFrameLayout>
+
+            <LinearLayout style="@style/SoloPayBarTitleStyle">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/solopay_section_recent"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <com.xuexiang.xui.widget.layout.XUIFrameLayout
+                style="@style/SoloPayXUILayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:padding="14dp">
+
+                <TextView
+                    android:id="@+id/solopay_recent_lines"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:lineSpacingExtra="4dp"
+                    android:text="—"
+                    android:textColor="@color/xui_config_color_content_text"
+                    android:textSize="14sp" />
+            </com.xuexiang.xui.widget.layout.XUIFrameLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</LinearLayout>

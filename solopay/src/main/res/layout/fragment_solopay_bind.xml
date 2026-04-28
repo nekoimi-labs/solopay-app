@@ -1,61 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:background="?attr/xui_config_color_background"
+    android:orientation="vertical"
+    tools:ignore="TooManyViews">
 
-    <LinearLayout
+    <com.xuexiang.xui.widget.actionbar.TitleBar
+        android:id="@+id/solopay_title_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="wrap_content" />
 
-        <TextView
+    <androidx.core.widget.NestedScrollView style="@style/SoloPayScrollViewStyle">
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="API 基地址"
-            android:textColor="#666666"
-            android:textSize="14sp" />
+            android:layout_margin="5dp"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/solopay_api_base"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="—"
-            android:textIsSelectable="true"
-            android:textSize="13sp" />
+            <LinearLayout style="@style/SoloPayBarTitleStyle">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="device_id"
-            android:textColor="#666666"
-            android:textSize="14sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/solopay_bind_info_title"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
-        <TextView
-            android:id="@+id/solopay_device_id"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:fontFamily="monospace"
-            android:text="—"
-            android:textIsSelectable="true"
-            android:textSize="13sp" />
+            <com.xuexiang.xui.widget.layout.XUIFrameLayout
+                style="@style/SoloPayXUILayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:padding="14dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/solopay_btn_scan"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="@string/solopay_scan_bind" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/solopay_btn_advanced"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/solopay_open_forwarder" />
-    </LinearLayout>
-</ScrollView>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/solopay_api_base_label"
+                        android:textColor="@color/xui_config_color_explain_text"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/solopay_api_base"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="—"
+                        android:textIsSelectable="true"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/solopay_device_id_label"
+                        android:textColor="@color/xui_config_color_explain_text"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/solopay_device_id"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:fontFamily="monospace"
+                        android:text="—"
+                        android:textIsSelectable="true"
+                        android:textSize="13sp" />
+                </LinearLayout>
+            </com.xuexiang.xui.widget.layout.XUIFrameLayout>
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/solopay_btn_scan"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="8dp"
+                android:text="@string/solopay_scan_bind"
+                android:textColor="@android:color/white"
+                app:backgroundTint="@color/solopay_color_primary" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/solopay_btn_advanced"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:text="@string/solopay_open_forwarder"
+                android:textColor="@color/solopay_color_primary" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</LinearLayout>

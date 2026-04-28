@@ -4,13 +4,20 @@ import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.RoomDatabase
 import kotlinx.coroutines.flow.Flow
 
-@Entity(tableName = "signal_outbox")
+@Entity(
+    tableName = "signal_outbox",
+    indices = [
+        Index(value = ["external_event_id"], unique = true),
+    ],
+)
 data class SignalOutboxEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     @ColumnInfo(name = "external_event_id") val externalEventId: String,
@@ -32,7 +39,7 @@ data class SignalOutboxEntity(
 @Dao
 interface SignalOutboxDao {
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(row: SignalOutboxEntity): Long
 
     @Query(
@@ -46,19 +53,27 @@ interface SignalOutboxDao {
     @Query(
         """
         SELECT IFNULL(SUM(amount_cents), 0) FROM signal_outbox
-        WHERE status = 'sent' AND created_at >= :startOfDay
+        WHERE status = :sent AND created_at >= :startOfDay
         """,
     )
-    fun todaySentAmountCentsFlow(startOfDay: Long): Flow<Long?>
+    fun todaySentAmountCentsFlow(startOfDay: Long, sent: String): Flow<Long?>
 
     @Query("UPDATE signal_outbox SET status = :st, updated_at = :t, last_error = :err WHERE id = :id")
     suspend fun updateStatus(id: Long, st: String, t: Long, err: String?)
+
+    @Query(
+        """
+        UPDATE signal_outbox SET status = :failed, updated_at = :t, last_error = :err
+        WHERE status = :pending
+        """,
+    )
+    suspend fun markAllPendingAsFailed(pending: String, failed: String, t: Long, err: String)
 
     @Query("SELECT * FROM signal_outbox WHERE external_event_id = :eid LIMIT 1")
     suspend fun byExternalId(eid: String): SignalOutboxEntity?
 }
 
-@Database(entities = [SignalOutboxEntity::class], version = 1, exportSchema = false)
+@Database(entities = [SignalOutboxEntity::class], version = 2, exportSchema = false)
 abstract class SoloPayDatabase : RoomDatabase() {
     abstract fun outboxDao(): SignalOutboxDao
 }

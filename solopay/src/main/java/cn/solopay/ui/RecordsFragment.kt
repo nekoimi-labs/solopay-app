@@ -9,6 +9,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import cn.solopay.R
 import cn.solopay.SoloPay
 import cn.solopay.databinding.FragmentSolopayRecordsBinding
 import kotlinx.coroutines.launch
@@ -32,13 +33,18 @@ class RecordsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         SoloPay.ensureInit(requireContext())
+        binding.solopayTitleBar.setTitle(getString(R.string.solopay_records))
         binding.solopayRecordsList.layoutManager = LinearLayoutManager(requireContext())
         binding.solopayRecordsList.adapter = adapter
+
+        binding.solopayRefresh.setOnRefreshListener {
+            binding.solopayRefresh.finishRefresh(500)
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 SoloPay.db.outboxDao().recentFlow(200).collect { rows ->
-                    adapter.submit(rows)
+                    adapter.submitList(rows)
                 }
             }
         }

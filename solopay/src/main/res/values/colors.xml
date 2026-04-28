@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="solopay_color_primary">#299EE3</color>
+    <color name="solopay_color_primary_dark">#299EE3</color>
+    <color name="solopay_color_accent">#299EE3</color>
+    <color name="solopay_bar_background">#FFFFFFFF</color>
+    <color name="solopay_tab_unselected">#757575</color>
+</resources>

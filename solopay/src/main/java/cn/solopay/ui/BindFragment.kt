@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import cn.solopay.CredentialsStore
+import cn.solopay.R
 import cn.solopay.databinding.FragmentSolopayBindBinding
 
 class BindFragment : Fragment() {
@@ -32,6 +33,7 @@ class BindFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.solopayTitleBar.setTitle(getString(R.string.solopay_bind))
         binding.solopayBtnScan.setOnClickListener {
             startActivity(Intent(requireContext(), BindScanActivity::class.java))
         }

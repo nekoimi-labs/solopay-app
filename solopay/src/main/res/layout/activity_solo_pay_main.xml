@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:background="@color/xui_config_color_white"
+    android:orientation="vertical"
+    tools:ignore="Overdraw">
 
     <FrameLayout
         android:id="@+id/solopay_container"
@@ -11,9 +14,16 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/solopay_bottom"
+    <View style="@style/SoloPaySeparatorVertical" />
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/solopay_tabs"
+        style="@style/SoloPayTabLayoutStyle"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:menu="@menu/solopay_bottom" />
+        android:layout_height="?attr/xui_actionbar_height"
+        app:tabBackground="@null"
+        app:tabGravity="fill"
+        app:tabIndicatorColor="@color/xui_config_color_transparent"
+        app:tabMode="fixed"
+        app:tabPaddingTop="2dp" />
 </LinearLayout>

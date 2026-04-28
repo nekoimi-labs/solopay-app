@@ -31,7 +31,7 @@ class SoloPayKeepAliveService : Service() {
         val notif = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.stat_sys_upload)
             .setContentTitle(getString(R.string.solopay_keep_alive_channel))
-            .setContentText("正在同步收款记录到 SoloPay")
+            .setContentText(getString(R.string.solopay_keep_alive_text))
             .setOngoing(true)
             .build()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

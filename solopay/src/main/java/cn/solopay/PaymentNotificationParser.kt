@@ -14,6 +14,7 @@ object PaymentNotificationParser {
 
     private const val PKG_WECHAT = "com.tencent.mm"
     private const val PKG_ALIPAY = "com.eg.android.AlipayGphone"
+    private const val MAX_CENTS = 10_000_000L
 
     /** 常见收款通知金额匹配 */
     private val amountPatterns = listOf(
@@ -34,7 +35,7 @@ object PaymentNotificationParser {
 
         val amountYuan = extractAmountYuan(blob) ?: return null
         val cents = yuanToCents(amountYuan) ?: return null
-        if (cents <= 0) return null
+        if (cents <= 0 || cents > MAX_CENTS) return null
 
         return ParsedPayment(
             channelType = channel,
@@ -58,7 +59,11 @@ object PaymentNotificationParser {
     }
 
     private fun yuanToCents(yuan: BigDecimal): Long? {
-        val scaled = yuan.movePointRight(2).setScale(0, RoundingMode.HALF_UP)
-        return scaled.longValueExact()
+        return try {
+            val scaled = yuan.movePointRight(2).setScale(0, RoundingMode.HALF_UP)
+            scaled.toLong()
+        } catch (_: Exception) {
+            null
+        }
     }
 }
