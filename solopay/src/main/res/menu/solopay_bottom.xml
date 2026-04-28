@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/solopay_nav_home"
+        android:icon="@android:drawable/ic_menu_day"
+        android:title="@string/solopay_home" />
+    <item
+        android:id="@+id/solopay_nav_bind"
+        android:icon="@android:drawable/ic_menu_camera"
+        android:title="@string/solopay_bind" />
+    <item
+        android:id="@+id/solopay_nav_perm"
+        android:icon="@android:drawable/ic_lock_idle_lock"
+        android:title="@string/solopay_permissions" />
+    <item
+        android:id="@+id/solopay_nav_records"
+        android:icon="@android:drawable/ic_menu_recent_history"
+        android:title="@string/solopay_records" />
+</menu>

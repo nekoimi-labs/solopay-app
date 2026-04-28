@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="SoloPayTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">#1677FF</item>
+        <item name="android:statusBarColor">#1677FF</item>
+    </style>
+</resources>

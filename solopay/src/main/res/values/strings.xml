@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="solopay_app_name">SoloPay 收款助手</string>
+    <string name="solopay_home">首页</string>
+    <string name="solopay_bind">设备绑定</string>
+    <string name="solopay_permissions">权限引导</string>
+    <string name="solopay_records">收款记录</string>
+    <string name="solopay_status_listen">监听状态</string>
+    <string name="solopay_status_bound">绑定状态</string>
+    <string name="solopay_scan_bind">扫码绑定</string>
+    <string name="solopay_open_forwarder">打开原转发器界面（高级）</string>
+    <string name="solopay_keep_alive_channel">收款助手运行状态</string>
+</resources>

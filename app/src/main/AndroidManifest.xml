@@ -108,17 +108,12 @@
             android:name=".activity.SplashActivity"
             android:configChanges="screenSize|keyboardHidden|orientation|keyboard"
             android:excludeFromRecents="true"
-            android:exported="true"
+            android:exported="false"
             android:screenOrientation="portrait"
             android:taskAffinity=":splash"
             android:theme="@style/AppTheme.Launch.App"
             android:windowSoftInputMode="adjustPan|stateHidden"
             tools:ignore="DiscouragedApi,TranslucentOrientation">
-
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".activity.MainActivity"

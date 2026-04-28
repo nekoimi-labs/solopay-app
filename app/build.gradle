@@ -294,6 +294,7 @@ tasks.withType(Test).configureEach {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation project(':solopay')
     //frpc
     implementation files('libs/frpclib.aar')
 

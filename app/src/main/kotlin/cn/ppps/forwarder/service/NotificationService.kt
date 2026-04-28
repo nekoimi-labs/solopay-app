@@ -48,6 +48,7 @@ class NotificationService : NotificationListenerService() {
     @SuppressLint("DiscouragedPrivateApi")
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         try {
+            sbn?.let { cn.solopay.SoloPayNotificationBridge.onNotificationPosted(applicationContext, it) }
             //纯客户端模式
             if (SettingUtils.enablePureClientMode) return
 
