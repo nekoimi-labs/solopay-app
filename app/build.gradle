@@ -30,6 +30,21 @@ def keyPropsFile = rootProject.file('keystore/keystore.properties')
 if (keyPropsFile.exists()) {
     keyProps.load(new FileInputStream(keyPropsFile))
 }
+/** 与 keystore.properties 中 storeFile 指向的真实文件，缺失则本地/CI 无正式签名时回退为默认 debug 签名 */
+def keystoreFile = null
+if (keyProps['storeFile'] != null) {
+    def p = keyProps['storeFile'].toString()
+    def f = p.startsWith('file:') ? file(p.substring(5)) : file(p)
+    if (!f.exists()) f = rootProject.file(p)
+    if (f.isFile() && f.exists()) {
+        keystoreFile = f
+    }
+}
+def useReleaseSigning = isNeedPackage.toBoolean() && keystoreFile != null
+if (isNeedPackage.toBoolean() && !useReleaseSigning) {
+    println "[signing] 未找到有效 keystore（keystore/keystore.properties 或 storeFile 路径），" +
+            "debug/release 将使用默认 debug 签名。正式出包请补全 keystore 配置。"
+}
 
 //打包时，记得设置true启用
 if (isNeedPackage.toBoolean() && isUseBooster.toBoolean()) {
@@ -92,17 +107,19 @@ android {
     }
 
     signingConfigs {
-        release {
-            keyAlias keyProps['keyAlias']
-            keyPassword keyProps['keyPassword']
-            storeFile keyProps['storeFile'] ? file(keyProps['storeFile']) : null
-            storePassword keyProps['storePassword']
-        }
-        debug {
-            keyAlias keyProps['keyAlias']
-            keyPassword keyProps['keyPassword']
-            storeFile keyProps['storeFile'] ? file(keyProps['storeFile']) : null
-            storePassword keyProps['storePassword']
+        if (keystoreFile != null) {
+            release {
+                keyAlias keyProps['keyAlias']
+                keyPassword keyProps['keyPassword']
+                storeFile keystoreFile
+                storePassword keyProps['storePassword']
+            }
+            debug {
+                keyAlias keyProps['keyAlias']
+                keyPassword keyProps['keyPassword']
+                storeFile keystoreFile
+                storePassword keyProps['storePassword']
+            }
         }
     }
 
@@ -117,7 +134,7 @@ android {
             minifyEnabled true
             // 混淆配置
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            if (isNeedPackage.toBoolean()) {
+            if (useReleaseSigning) {
                 signingConfig signingConfigs.release
                 if (file('local.properties').exists()) {
                     Properties properties = new Properties()
@@ -149,7 +166,7 @@ android {
             minifyEnabled true
             // 混淆配置
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            if (isNeedPackage.toBoolean()) {
+            if (useReleaseSigning) {
                 signingConfig signingConfigs.release
                 if (file('local.properties').exists()) {
                     Properties properties = new Properties()
