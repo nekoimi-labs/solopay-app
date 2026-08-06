@@ -33,6 +33,7 @@ class PermissionsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.solopayTitleBar.setTitle(getString(R.string.solopay_permissions))
+        binding.solopayTitleBar.disableLeftView()
 
         binding.solopayBtnNotifListener.setOnClickListener {
             startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))

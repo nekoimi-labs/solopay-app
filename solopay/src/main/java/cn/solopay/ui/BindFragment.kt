@@ -34,6 +34,7 @@ class BindFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.solopayTitleBar.setTitle(getString(R.string.solopay_bind))
+        binding.solopayTitleBar.disableLeftView()
         binding.solopayBtnScan.setOnClickListener {
             startActivity(Intent(requireContext(), BindScanActivity::class.java))
         }

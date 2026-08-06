@@ -34,6 +34,7 @@ class RecordsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         SoloPay.ensureInit(requireContext())
         binding.solopayTitleBar.setTitle(getString(R.string.solopay_records))
+        binding.solopayTitleBar.disableLeftView()
         binding.solopayRecordsList.layoutManager = LinearLayoutManager(requireContext())
         binding.solopayRecordsList.adapter = adapter
 

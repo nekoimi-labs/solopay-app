@@ -37,6 +37,7 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         SoloPay.ensureInit(requireContext())
         binding.solopayTitleBar.setTitle(getString(R.string.solopay_home))
+        binding.solopayTitleBar.disableLeftView()
 
         val creds = CredentialsStore(requireContext())
         binding.solopayBoundStatus.text =
