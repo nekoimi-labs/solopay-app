@@ -56,6 +56,9 @@ class SettingUtils private constructor() {
         //是否转发应用通知——自动消除额外APP通知
         var cancelExtraAppNotify: String by SharedPreference(SP_CANCEL_EXTRA_APP_NOTIFY, "")
 
+        //是否转发应用通知——关键词黑名单（一行一个，支持正则，命中标题或内容则不转发）
+        var appNotifyBlacklist: String by SharedPreference(SP_APP_NOTIFY_BLACKLIST, "")
+
         //是否转发应用通知——仅锁屏状态
         var enableNotUserPresent: Boolean by SharedPreference(SP_ENABLE_NOT_USER_PRESENT, false)
 
@@ -91,6 +94,9 @@ class SettingUtils private constructor() {
 
         //是否启用1像素
         var enableOnePixelActivity: Boolean by SharedPreference(SP_ENABLE_ONE_PIXEL_ACTIVITY, false)
+
+        //无声音乐唤醒间隔（秒，越大越省电）
+        var musicInterval: Int by SharedPreference(SP_MUSIC_INTERVAL, 10)
 
         //请求接口失败重试次数
         var requestRetryTimes: Int by SharedPreference(SP_REQUEST_RETRY_TIMES, 0)

@@ -28,12 +28,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.hjq.language.LocaleContract
-import com.hjq.language.MultiLanguages
-import com.hjq.permissions.OnPermissionCallback
-import com.hjq.permissions.XXPermissions
-import com.hjq.permissions.permission.PermissionLists
-import com.hjq.permissions.permission.base.IPermission
 import cn.ppps.forwarder.App
 import cn.ppps.forwarder.R
 import cn.ppps.forwarder.activity.MainActivity
@@ -68,6 +62,12 @@ import cn.ppps.forwarder.utils.SettingUtils
 import cn.ppps.forwarder.utils.XToastUtils
 import cn.ppps.forwarder.widget.GuideTipsDialog
 import cn.ppps.forwarder.workers.LoadAppListWorker
+import com.hjq.language.LocaleContract
+import com.hjq.language.MultiLanguages
+import com.hjq.permissions.OnPermissionCallback
+import com.hjq.permissions.XXPermissions
+import com.hjq.permissions.permission.PermissionLists
+import com.hjq.permissions.permission.base.IPermission
 import com.jeremyliao.liveeventbus.LiveEventBus
 import com.xuexiang.xaop.annotation.SingleClick
 import com.xuexiang.xpage.annotation.Page
@@ -158,6 +158,8 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding?>(), View.OnClickL
         switchEnableLoadAppList(binding!!.sbEnableLoadAppList, binding!!.scbLoadUserApp, binding!!.scbLoadSystemApp)
         //设置自动消除额外APP通知
         editExtraAppList(binding!!.etAppList)
+        //设置APP通知关键词黑名单
+        editAppNotifyBlacklist(binding!!.etAppNotifyBlacklist)
         //自动过滤多久内重复消息
         binding!!.xsbDuplicateMessagesLimits.setDefaultValue(SettingUtils.duplicateMessagesLimits)
         binding!!.xsbDuplicateMessagesLimits.setOnSeekBarListener { _: XSeekBar?, newValue: Int ->
@@ -177,7 +179,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding?>(), View.OnClickL
         //不在最近任务列表中显示
         switchExcludeFromRecents(binding!!.layoutExcludeFromRecents, binding!!.sbExcludeFromRecents)
         //Cactus增强保活措施
-        switchEnableCactus(binding!!.sbEnableCactus, binding!!.scbPlaySilenceMusic, binding!!.scbOnePixelActivity)
+        switchEnableCactus(binding!!.sbEnableCactus, binding!!.scbPlaySilenceMusic, binding!!.scbOnePixelActivity, binding!!.layoutMusicInterval, binding!!.xsbMusicInterval)
         //接口请求失败重试时间间隔
         editRetryDelayTime(binding!!.xsbRetryTimes, binding!!.xsbDelayTime, binding!!.xsbTimeout)
 
@@ -792,7 +794,19 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding?>(), View.OnClickL
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable) {
-                SettingUtils.cancelExtraAppNotify = textAppList.text.toString().trim().removeSuffix("\n")
+                SettingUtils.cancelExtraAppNotify = textAppList.text.toString().trim().replace("\r", "").replace("\n+", "\n").removeSuffix("\n")
+            }
+        })
+    }
+
+    //设置APP通知关键词黑名单
+    private fun editAppNotifyBlacklist(textBlacklist: EditText) {
+        textBlacklist.setText(SettingUtils.appNotifyBlacklist)
+        textBlacklist.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable) {
+                SettingUtils.appNotifyBlacklist = textBlacklist.text.toString().trim().replace("\r", "").replace("\n+", "\n").removeSuffix("\n")
             }
         })
     }
@@ -921,14 +935,16 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding?>(), View.OnClickL
 
     //Cactus增强保活措施
     @SuppressLint("UseSwitchCompatOrMaterialCode")
-    private fun switchEnableCactus(sbEnableCactus: SwitchButton, scbPlaySilenceMusic: SmoothCheckBox, scbOnePixelActivity: SmoothCheckBox) {
+    private fun switchEnableCactus(sbEnableCactus: SwitchButton, scbPlaySilenceMusic: SmoothCheckBox, scbOnePixelActivity: SmoothCheckBox, layoutMusicInterval: LinearLayout, xsbMusicInterval: XSeekBar) {
         val layoutCactusOptional: LinearLayout = binding!!.layoutCactusOptional
         val isEnable: Boolean = SettingUtils.enableCactus
         sbEnableCactus.isChecked = isEnable
         layoutCactusOptional.visibility = if (isEnable) View.VISIBLE else View.GONE
+        layoutMusicInterval.visibility = if (isEnable && SettingUtils.enablePlaySilenceMusic) View.VISIBLE else View.GONE
 
         sbEnableCactus.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
             layoutCactusOptional.visibility = if (isChecked) View.VISIBLE else View.GONE
+            layoutMusicInterval.visibility = if (isChecked && SettingUtils.enablePlaySilenceMusic) View.VISIBLE else View.GONE
             SettingUtils.enableCactus = isChecked
             XToastUtils.warning(getString(R.string.need_to_restart))
         }
@@ -936,6 +952,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding?>(), View.OnClickL
         scbPlaySilenceMusic.isChecked = SettingUtils.enablePlaySilenceMusic
         scbPlaySilenceMusic.setOnCheckedChangeListener { _: SmoothCheckBox, isChecked: Boolean ->
             SettingUtils.enablePlaySilenceMusic = isChecked
+            layoutMusicInterval.visibility = if (isChecked) View.VISIBLE else View.GONE
             XToastUtils.warning(getString(R.string.need_to_restart))
         }
 
@@ -946,6 +963,14 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding?>(), View.OnClickL
         scbOnePixelActivity.setOnCheckedChangeListener { _: SmoothCheckBox, isChecked: Boolean ->
             SettingUtils.enableOnePixelActivity = isChecked
             XToastUtils.warning(getString(R.string.need_to_restart))
+        }
+
+        xsbMusicInterval.setDefaultValue(SettingUtils.musicInterval)
+        xsbMusicInterval.setOnSeekBarListener { _: XSeekBar?, newValue: Int ->
+            if (newValue != SettingUtils.musicInterval) {
+                SettingUtils.musicInterval = newValue
+                XToastUtils.warning(getString(R.string.need_to_restart))
+            }
         }
     }
 

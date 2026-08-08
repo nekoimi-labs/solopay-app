@@ -2,7 +2,6 @@ package cn.ppps.forwarder.utils.sender
 
 import android.text.TextUtils
 import android.util.Base64
-import com.google.gson.Gson
 import cn.ppps.forwarder.database.entity.Rule
 import cn.ppps.forwarder.entity.MsgInfo
 import cn.ppps.forwarder.entity.result.DingtalkResult
@@ -11,6 +10,7 @@ import cn.ppps.forwarder.utils.Log
 import cn.ppps.forwarder.utils.SendUtils
 import cn.ppps.forwarder.utils.SettingUtils
 import cn.ppps.forwarder.utils.interceptor.LoggingInterceptor
+import com.google.gson.Gson
 import com.xuexiang.xhttp2.XHttp
 import com.xuexiang.xhttp2.callback.SimpleCallBack
 import com.xuexiang.xhttp2.exception.ApiException
@@ -34,7 +34,7 @@ class DingtalkGroupRobotUtils private constructor() {
             msgId: Long = 0L
         ) {
             var content: String = if (rule != null) {
-                msgInfo.getContentForSend(rule.smsTemplate, rule.regexReplace)
+                msgInfo.getContentForSend(rule.smsTemplate, rule.regexReplace, rule.title)
             } else {
                 msgInfo.getContentForSend(SettingUtils.smsTemplate)
             }
@@ -88,7 +88,7 @@ class DingtalkGroupRobotUtils private constructor() {
 
             if ("markdown" == msgMap["msgtype"]) {
                 val titleTemplate = setting.titleTemplate
-                val title = rule?.let { msgInfo.getTitleForSend(titleTemplate, it.regexReplace) } ?: msgInfo.getTitleForSend(titleTemplate)
+                val title = rule?.let { msgInfo.getTitleForSend(titleTemplate, it.regexReplace, it.title) } ?: msgInfo.getTitleForSend(titleTemplate)
                 msgMap["markdown"] = mutableMapOf<String, Any>("title" to title, "text" to content)
             } else {
                 msgMap["text"] = mutableMapOf<String, Any>("content" to content)

@@ -29,6 +29,7 @@
     <string name="insert_tag_net_type">网络状态</string>
     <string name="insert_tag_contact_name">来源姓名</string>
     <string name="insert_tag_phone_area">来源归属</string>
+    <string name="insert_tag_rule_title">规则别名</string>
 
     <string name="type_param_sms">短信</string>
     <string name="type_param_call">通话</string>
@@ -274,8 +275,18 @@
     <string name="email_to_smime_tips">Tip: 点击按钮添加收件人邮箱、S/MIME加密公钥（可选）</string>
     <string name="email_to_openpgp">收件人邮箱 &amp; OpenPGP加密公钥</string>
     <string name="email_to_openpgp_tips">Tip: 点击按钮添加收件人邮箱、OpenPGP加密公钥（可选）</string>
+    <string name="email_to_openkeychain">收件人邮箱（OpenKeychain自动匹配公钥）</string>
+    <string name="email_to_openkeychain_tips">Tip: 加密公钥由OpenKeychain按收件人邮箱自动匹配，需先在OpenKeychain中导入对应公钥</string>
     <string name="sender_smime_keystore">发件人S/MIME签名私钥（可选）</string>
     <string name="sender_openpgp_keystore">发件人OpenPGP签名私钥（可选）</string>
+    <string name="sender_openkeychain_sign_key">发件人OpenKeychain签名密钥（可选）</string>
+    <string name="openkeychain_sign_key_none">未选择（只加密不签名）</string>
+    <string name="openkeychain_select_sign_key">选择签名密钥</string>
+    <string name="openkeychain_clear_sign_key">清除</string>
+    <string name="openkeychain_sign_key_selected">已选择签名密钥：%s</string>
+    <string name="openkeychain_sign_key_tips">Tip: 签名密钥若设有密码，请在OpenKeychain中开启密码缓存，否则后台转发时签名会失败</string>
+    <string name="openkeychain_not_installed">未安装OpenKeychain，请先安装：https://www.openkeychain.org</string>
+    <string name="openkeychain_check_failed">OpenKeychain加密预检失败：%s</string>
     <string name="invalid_sender_keystore">发件人签名私钥无效</string>
     <string name="recipient_email">收件人邮箱</string>
     <string name="keystore_base64">指定证书</string>
@@ -424,6 +435,7 @@
     <string name="plain">明文</string>
     <string name="smime">S/MIME</string>
     <string name="openpgp">OpenPGP</string>
+    <string name="openkeychain">OpenKeychain</string>
     <string name="proxy_settings">代理设置</string>
     <string name="proxy_none">无代理</string>
     <string name="proxy_http">HTTP</string>
@@ -617,6 +629,7 @@
     <string name="bark_encryption_key_error2">加密密钥必须是24位</string>
     <string name="bark_encryption_key_error3">加密密钥必须是32位</string>
     <string name="bark_encryption_key_error4">偏移向量必须是16位 或 留空</string>
+    <string name="bark_encryption_key_error5">GCM偏移向量必须是12位 或 留空</string>
 
     <string name="from_email_hint">填写 @ 前面的用户名</string>
     <string name="other_mail_type">其他邮箱</string>
@@ -651,6 +664,8 @@
     <string name="select_sender_type">请选择发送通道类型</string>
     <string name="feishu_webhook_hint">群机器人→Webhook 地址</string>
     <string name="feishu_secret_hint">群机器人→安全设置→签名校验</string>
+    <string name="feishu_at_open_ids">@ 指定人 (open_id 或 user_id)</string>
+    <string name="feishu_at_open_ids_tip">填写用户的 open_id 或 user_id，多个用英文逗号分隔，留空则不@</string>
     <string name="pushplus_token_hint">请前往对应的官网地址获取</string>
     <string name="choose_rule">下拉选择，关键字模糊匹配</string>
     <string name="choose_sender">下拉选择，关键字模糊匹配</string>
@@ -659,6 +674,8 @@
     <string name="choose_app">已装APP列表</string>
     <string name="extra_app">额外消除应用通知</string>
     <string name="extra_app_hint">一行一个包名\n开启异步加载App列表以便选择</string>
+    <string name="app_notify_blacklist">APP通知关键词黑名单</string>
+    <string name="app_notify_blacklist_hint">一行一个关键词，支持正则表达式\n通知标题或内容命中任一关键词则不转发</string>
     <string name="choose_app_hint">下拉选择获取包名，关键字模糊匹配APP名称</string>
     <string name="regex_multi_match" tools:ignore="TypographyDashes">^\\s*(并且|或者)\\s(是|不是)\\s(手机号|APP包名|短信内容|通知内容|通知标题|卡槽信息|通话类型|UID)\\s(相等|包含|不包含|开头|结尾|正则匹配)\\s(.*)$</string>
     <string name="privacy_content_1">欢迎使用</string>
@@ -792,6 +809,15 @@
     <string name="battery_health">健康度：%s</string>
     <string name="battery_plugged">充电器：%s</string>
     <string name="battery_plugged_title">充电器</string>
+    <string name="battery_voltage_title">电池电压（mV）</string>
+    <string name="battery_temperature_title">电池温度（℃）</string>
+    <string name="battery_health_title">电池健康度</string>
+    <string name="battery_health_changed">，【电池健康度】发生变化：</string>
+    <string name="battery_voltage_range_error">最低电压不能大于最高电压</string>
+    <string name="battery_temperature_range_error">最低温度不能大于最高温度</string>
+    <string name="condition_match_type_title">条件组合方式</string>
+    <string name="condition_match_all">全部满足</string>
+    <string name="condition_match_any">任一满足</string>
 
     <string name="server_history">历史记录</string>
     <string name="server_test">登录服务</string>
@@ -829,6 +855,7 @@
     <string name="reach_level_min">【电量预警】已达到电量预警下限，请及时充电！%s</string>
     <string name="reach_level_max">【电量预警】已达到电量预警上限，请拔掉充电器！%s</string>
     <string name="battery_status_changed">【充电状态】发生变化：</string>
+    <string name="battery_status_required">至少选择一个充电状态</string>
     <string name="no_indentation_allowed_on_the_first_line">第一行不允许缩进</string>
     <string name="sign_required">服务端启用签名密钥，sign节点必传</string>
     <string name="timestamp_required">服务端启用签名密钥，timestamp节点必传</string>
@@ -858,6 +885,7 @@
     <string name="optional_components">可选组件：</string>
     <string name="enable_cactus">启用 Cactus 增强保活措施（会增加耗电）</string>
     <string name="enable_cactus_tips">双进程前台服务/JobScheduler/WorkManager/1像素/无声音乐</string>
+    <string name="music_interval">唤醒间隔</string>
     <string name="load_app_list">启动时异步获取已安装App列表</string>
     <string name="load_app_list_tips">用于加速进入应用列表/编辑转发规则下拉选择/替换{{APP_NAME}}</string>
     <string name="load_app_list_toast">开启异步获取已安装App列表时必选一个类型</string>

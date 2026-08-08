@@ -19,6 +19,13 @@ jobs:
     steps:
       # 检出代码
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 50
+      # 检查最近7天是否有提交，如果没有则退出
+      - run: |
+          if [ -z "$(git log --since='7 days ago' --oneline)" ]; then
+            echo "no recent commits"; exit 0
+          fi
       # 删除旧的工作流
       - name: Delete Weekly Build
         uses: Mattraks/delete-workflow-runs@v2

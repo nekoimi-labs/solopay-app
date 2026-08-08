@@ -29,6 +29,7 @@
     <string name="insert_tag_net_type">網路狀態</string>
     <string name="insert_tag_contact_name">來源姓名</string>
     <string name="insert_tag_phone_area">来源歸屬</string>
+    <string name="insert_tag_rule_title">規則別名</string>
 
     <string name="type_param_sms">簡訊</string>
     <string name="type_param_call">通話</string>
@@ -274,8 +275,18 @@
     <string name="email_to_smime_tips">提示：點擊按鈕添加收件人郵箱、S/MIME加密公鑰（可選）</string>
     <string name="email_to_openpgp">收件人郵箱 &amp; OpenPGP加密公鑰</string>
     <string name="email_to_openpgp_tips">提示：點擊按鈕添加收件人郵箱、OpenPGP加密公鑰（可選）</string>
+    <string name="email_to_openkeychain">收件人郵箱（OpenKeychain自動匹配公鑰）</string>
+    <string name="email_to_openkeychain_tips">提示：加密公鑰由OpenKeychain按收件人郵箱自動匹配，需先在OpenKeychain中導入對應公鑰</string>
     <string name="sender_smime_keystore">發件人S/MIME簽名私鑰（可選）</string>
     <string name="sender_openpgp_keystore">發件人OpenPGP簽名私鑰（可選）</string>
+    <string name="sender_openkeychain_sign_key">發件人OpenKeychain簽名密鑰（可選）</string>
+    <string name="openkeychain_sign_key_none">未選擇（只加密不簽名）</string>
+    <string name="openkeychain_select_sign_key">選擇簽名密鑰</string>
+    <string name="openkeychain_clear_sign_key">清除</string>
+    <string name="openkeychain_sign_key_selected">已選擇簽名密鑰：%s</string>
+    <string name="openkeychain_sign_key_tips">提示：簽名密鑰若設有密碼，請在OpenKeychain中開啟密碼緩存，否則後台轉發時簽名會失敗</string>
+    <string name="openkeychain_not_installed">未安裝OpenKeychain，請先安裝：https://www.openkeychain.org</string>
+    <string name="openkeychain_check_failed">OpenKeychain加密預檢失敗：%s</string>
     <string name="invalid_sender_keystore">發件人簽名私鑰無效</string>
     <string name="recipient_email">收件人郵箱</string>
     <string name="keystore_base64">指定證書</string>
@@ -424,6 +435,7 @@
     <string name="plain">明文</string>
     <string name="smime">S/MIME</string>
     <string name="openpgp">OpenPGP</string>
+    <string name="openkeychain">OpenKeychain</string>
     <string name="proxy_settings">代理設置</string>
     <string name="proxy_none">無代理</string>
     <string name="proxy_http">HTTP</string>
@@ -617,6 +629,7 @@
     <string name="bark_encryption_key_error2">加密密鑰必須是24位</string>
     <string name="bark_encryption_key_error3">加密密鑰必須是32位</string>
     <string name="bark_encryption_key_error4">偏移向量必須是16位 或 留空</string>
+    <string name="bark_encryption_key_error5">GCM偏移向量必須是12位 或 留空</string>
 
     <string name="from_email_hint">填寫 @ 前面的用戶名</string>
     <string name="other_mail_type">其他郵箱</string>
@@ -651,6 +664,8 @@
     <string name="select_sender_type">請選擇發送通道類型</string>
     <string name="feishu_webhook_hint">群機器人→Webhook 地址</string>
     <string name="feishu_secret_hint">群機器人→安全設置→簽名驗證</string>
+    <string name="feishu_at_open_ids">@ 指定人 (open_id 或 user_id)</string>
+    <string name="feishu_at_open_ids_tip">填寫用戶的 open_id 或 user_id，多個用英文逗號分隔，留空則不@</string>
     <string name="pushplus_token_hint">請前往對應的官網地址獲取</string>
     <string name="choose_rule">下拉選擇，關鍵字模糊匹配</string>
     <string name="choose_sender">下拉選擇，關鍵字模糊匹配</string>
@@ -659,6 +674,8 @@
     <string name="choose_app">已裝APP列表</string>
     <string name="extra_app">額外消除應用通知</string>
     <string name="extra_app_hint">一行一個包名\n開啟異步加載App列表以便選擇</string>
+    <string name="app_notify_blacklist">APP通知關鍵詞黑名單</string>
+    <string name="app_notify_blacklist_hint">一行一個關鍵詞，支持正則表達式\n通知標題或內容命中任一關鍵詞則不轉發</string>
     <string name="choose_app_hint">下拉選擇獲取包名，關鍵字模糊匹配APP名稱</string>
     <string name="regex_multi_match" tools:ignore="TypographyDashes">^\\s*(並且|或者)\\s(是|不是)\\s(手機號|APP包名|簡訊內容|通知內容|通知標題|卡槽信息|通話類型|UID)\\s(相等|包含|不包含|開頭|結尾|正則匹配)\\s(.*)$</string>
     <string name="privacy_content_1">歡迎使用</string>
@@ -792,6 +809,15 @@
     <string name="battery_health">健康度：%s</string>
     <string name="battery_plugged">充電器：%s</string>
     <string name="battery_plugged_title">充電器</string>
+    <string name="battery_voltage_title">電池電壓（mV）</string>
+    <string name="battery_temperature_title">電池溫度（℃）</string>
+    <string name="battery_health_title">電池健康度</string>
+    <string name="battery_health_changed">，【電池健康度】發生變化：</string>
+    <string name="battery_voltage_range_error">最低電壓不能大於最高電壓</string>
+    <string name="battery_temperature_range_error">最低溫度不能大於最高溫度</string>
+    <string name="condition_match_type_title">條件組合方式</string>
+    <string name="condition_match_all">全部滿足</string>
+    <string name="condition_match_any">任一滿足</string>
 
     <string name="server_history">歷史記錄</string>
     <string name="server_test">登入服務</string>
@@ -829,6 +855,7 @@
     <string name="reach_level_min">【電量預警】已達到電量預警下限，請及時充電！%s</string>
     <string name="reach_level_max">【電量預警】已達到電量預警上限，請拔掉充電器！%s</string>
     <string name="battery_status_changed">【充電狀態】發生變化：</string>
+    <string name="battery_status_required">至少選擇一個充電狀態</string>
     <string name="no_indentation_allowed_on_the_first_line">第一行不允許縮進</string>
     <string name="sign_required">服務端啟用簽名密鑰，sign節點必傳</string>
     <string name="timestamp_required">服務端啟用簽名密鑰，timestamp節點必傳</string>
@@ -858,6 +885,7 @@
     <string name="optional_components">可選組件：</string>
     <string name="enable_cactus">啟用 Cactus 增強保活措施（會增加耗電）</string>
     <string name="enable_cactus_tips">雙進程前台服務/JobScheduler/WorkManager/1像素/無聲音樂</string>
+    <string name="music_interval">喚醒間隔</string>
     <string name="load_app_list">啟動時異步獲取已安裝App列表</string>
     <string name="load_app_list_tips">用於加速進入應用列表/編輯轉發規則下拉選擇/替換{{APP_NAME}}</string>
     <string name="load_app_list_toast">開啟異步獲取已安裝App列表時必選一個類型</string>

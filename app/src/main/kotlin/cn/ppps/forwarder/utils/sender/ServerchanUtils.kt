@@ -1,7 +1,6 @@
 package cn.ppps.forwarder.utils.sender
 
 import android.text.TextUtils
-import com.google.gson.Gson
 import cn.ppps.forwarder.database.entity.Rule
 import cn.ppps.forwarder.entity.MsgInfo
 import cn.ppps.forwarder.entity.result.ServerchanResult
@@ -10,6 +9,7 @@ import cn.ppps.forwarder.utils.Log
 import cn.ppps.forwarder.utils.SendUtils
 import cn.ppps.forwarder.utils.SettingUtils
 import cn.ppps.forwarder.utils.interceptor.LoggingInterceptor
+import com.google.gson.Gson
 import com.xuexiang.xhttp2.XHttp
 import com.xuexiang.xhttp2.callback.SimpleCallBack
 import com.xuexiang.xhttp2.exception.ApiException
@@ -28,12 +28,12 @@ class ServerchanUtils {
             msgId: Long = 0L
         ) {
             val title: String = if (rule != null) {
-                msgInfo.getTitleForSend(setting.titleTemplate, rule.regexReplace)
+                msgInfo.getTitleForSend(setting.titleTemplate, rule.regexReplace, rule.title)
             } else {
                 msgInfo.getTitleForSend(setting.titleTemplate)
             }
             val content: String = if (rule != null) {
-                msgInfo.getContentForSend(rule.smsTemplate, rule.regexReplace)
+                msgInfo.getContentForSend(rule.smsTemplate, rule.regexReplace, rule.title)
             } else {
                 msgInfo.getContentForSend(SettingUtils.smsTemplate)
             }
@@ -45,7 +45,7 @@ class ServerchanUtils {
             } else {
                 String.format("https://sctapi.ftqq.com/%s.send", setting.sendKey) // 默认推送地址
             }
-            
+
             Log.i(TAG, "requestUrl:$requestUrl")
 
             val request = XHttp.post(requestUrl)

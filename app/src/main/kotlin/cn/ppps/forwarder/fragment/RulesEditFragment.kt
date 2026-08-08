@@ -62,10 +62,16 @@ import cn.ppps.forwarder.utils.PhoneUtils
 import cn.ppps.forwarder.utils.SENDER_LOGIC_ALL
 import cn.ppps.forwarder.utils.SENDER_LOGIC_UNTIL_FAIL
 import cn.ppps.forwarder.utils.SENDER_LOGIC_UNTIL_SUCCESS
+import cn.ppps.forwarder.utils.SP_RULE_TEST_CALL_TYPE
+import cn.ppps.forwarder.utils.SP_RULE_TEST_CONTENT
+import cn.ppps.forwarder.utils.SP_RULE_TEST_FROM
+import cn.ppps.forwarder.utils.SP_RULE_TEST_SIM_SLOT
+import cn.ppps.forwarder.utils.SP_RULE_TEST_TITLE
 import cn.ppps.forwarder.utils.STATUS_OFF
 import cn.ppps.forwarder.utils.STATUS_ON
 import cn.ppps.forwarder.utils.SendUtils
 import cn.ppps.forwarder.utils.SettingUtils
+import cn.ppps.forwarder.utils.SharedPreference
 import cn.ppps.forwarder.utils.XToastUtils
 import cn.ppps.forwarder.workers.LoadAppListWorker
 import com.jeremyliao.liveeventbus.LiveEventBus
@@ -639,6 +645,8 @@ class RulesEditFragment : BaseFragment<FragmentRulesEditBinding?>(), View.OnClic
             throw Exception(getString(R.string.invalid_match_value))
         }
         if (FILED_MULTI_MATCH == filed) {
+            value = value.replace("\r", "")
+            value = value.replace("\n+", "\n")
             val lineError = checkMultiMatch(value)
             if (lineError > 0) {
                 throw Exception(String.format(getString(R.string.invalid_multi_match), lineError))
@@ -759,6 +767,24 @@ class RulesEditFragment : BaseFragment<FragmentRulesEditBinding?>(), View.OnClic
         var callTypeTest = callType
         var callTypeIndexTest = callTypeIndex
 
+        //测试弹窗填写内容缓存（按ruleType区分）
+        var cacheSimSlot: Int by SharedPreference(SP_RULE_TEST_SIM_SLOT + ruleType, 0)
+        var cacheFrom: String by SharedPreference(SP_RULE_TEST_FROM + ruleType, "")
+        var cacheTitle: String by SharedPreference(SP_RULE_TEST_TITLE + ruleType, "")
+        var cacheContent: String by SharedPreference(SP_RULE_TEST_CONTENT + ruleType, "")
+        var cacheCallType: Int by SharedPreference(SP_RULE_TEST_CALL_TYPE + ruleType, callType)
+
+        //自动填充上次填写的内容
+        rgSimSlot.check(if (cacheSimSlot == 1) R.id.rb_sim_slot_2 else R.id.rb_sim_slot_1)
+        etFrom.setText(cacheFrom)
+        etTitle.setText(cacheTitle)
+        etContent.setText(cacheContent)
+        val cacheCallTypeIndex = CALL_TYPE_MAP.keys.toList().indexOf(cacheCallType.toString())
+        if (cacheCallTypeIndex != -1) {
+            callTypeTest = cacheCallType
+            callTypeIndexTest = cacheCallTypeIndex
+        }
+
         if ("app" == ruleType) {
             tvSimSlot.visibility = View.GONE
             rgSimSlot.visibility = View.GONE
@@ -796,6 +822,13 @@ class RulesEditFragment : BaseFragment<FragmentRulesEditBinding?>(), View.OnClic
                     R.id.rb_sim_slot_2 -> 1
                     else -> -1
                 }
+
+                //缓存本次填写的内容
+                cacheSimSlot = if (simSlot == 1) 1 else 0
+                cacheFrom = etFrom.text.toString()
+                cacheTitle = etTitle.text.toString()
+                cacheContent = etContent.text.toString()
+                cacheCallType = callTypeTest
 
                 val testSim = "SIM" + (simSlot + 1)
                 val ruleSim: String = rule.simSlot

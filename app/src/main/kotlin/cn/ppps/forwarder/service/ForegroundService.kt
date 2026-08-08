@@ -112,7 +112,7 @@ class ForegroundService : Service() {
             vibrationUtils.stopVibration()
         }
         //停止闪光灯
-        if (flashUtils.isFlashing) {
+        if (::flashUtils.isInitialized && flashUtils.isFlashing) {
             flashUtils.stopFlashing()
         }
         //停止播放音乐
@@ -192,7 +192,7 @@ class ForegroundService : Service() {
                 vibrationUtils.startVibration(alarm.vibrate, alarm.repeatTimes)
             }
             //闪光灯提醒
-            if (alarm.flashTimes >= 0) {
+            if (alarm.flashTimes >= 0 && ::flashUtils.isInitialized && flashUtils.isFlashSupported) {
                 isFlash = true
                 flashUtils.startFlashing(alarm.flash, alarm.flashTimes)
             }
@@ -252,7 +252,9 @@ class ForegroundService : Service() {
     override fun onDestroy() {
         //非纯客户端模式
         if (!SettingUtils.enablePureClientMode) stopForegroundService()
-        flashUtils.release()
+        if (::flashUtils.isInitialized) {
+            flashUtils.release()
+        }
         super.onDestroy()
     }
 
@@ -337,7 +339,7 @@ class ForegroundService : Service() {
                 vibrationUtils.stopVibration()
             }
             //停止闪光灯
-            if (flashUtils.isFlashing) {
+            if (::flashUtils.isInitialized && flashUtils.isFlashing) {
                 flashUtils.stopFlashing()
             }
         } catch (e: Exception) {
