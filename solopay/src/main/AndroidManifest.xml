@@ -13,8 +13,10 @@
             tools:replace="android:screenOrientation" />
         <activity
             android:name=".ui.SoloPayMainActivity"
+            android:clearTaskOnLaunch="true"
             android:exported="true"
             android:label="@string/solopay_app_name"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:theme="@style/SoloPayTheme">
             <intent-filter>
