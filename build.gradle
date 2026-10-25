@@ -37,7 +37,7 @@ allprojects {
     setBuildDir(new File(rootDir, "build/${path.replaceAll(':', '/')}"))
 }
 
-// Kotlin 1.8+ 已将 jdk7/jdk8 扩展并入 kotlin-stdlib；保留 jdk7/jdk8 坐标会与 stdlib 重复定义同类（R8 报错）
+// Keep Kotlin runtime artifacts aligned with the Kotlin compiler and R8 toolchain.
 def kotlinStdlibVersion = rootProject.ext.versions.kotlin
 subprojects { subproject ->
     subproject.configurations.configureEach { configuration ->
