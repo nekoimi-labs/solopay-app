@@ -160,9 +160,10 @@ android {
             // 调试模式开关
             debuggable true
             jniDebuggable true
-            // debug 不开 R8，避免 XRouter transform 产物与 kotlin-stdlib 重复类冲突
+            // Debug 不压缩资源、不启用 R8，避免 XRouter / Kotlin 重复类及不必要的资源重建。
             shrinkResources false
             minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             if (useReleaseSigning) {
                 signingConfig signingConfigs.release
                 if (file('local.properties').exists()) {
