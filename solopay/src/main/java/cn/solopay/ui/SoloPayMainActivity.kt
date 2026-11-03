@@ -2,7 +2,11 @@ package cn.solopay.ui
 
 import android.os.Bundle
 import android.content.Intent
+import android.view.View
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import cn.solopay.R
@@ -26,9 +30,23 @@ class SoloPayMainActivity : AppCompatActivity() {
         cn.solopay.SoloPay.ensureInit(applicationContext)
         binding = ActivitySoloPayMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.solopayToolbar.setNavigationOnClickListener {
+            binding.solopayDrawer.openDrawer(GravityCompat.START)
+        }
         binding.solopaySwitchBusiness.setOnClickListener {
+            binding.solopayDrawer.closeDrawer(GravityCompat.START, false)
             (application as? SoloPayHost)?.openSmsForwarder(this)
         }
+        val closeDrawer = object : OnBackPressedCallback(false) {
+            override fun handleOnBackPressed() {
+                binding.solopayDrawer.closeDrawer(GravityCompat.START)
+            }
+        }
+        onBackPressedDispatcher.addCallback(this, closeDrawer)
+        binding.solopayDrawer.addDrawerListener(object : DrawerLayout.SimpleDrawerListener() {
+            override fun onDrawerOpened(drawerView: View) { closeDrawer.isEnabled = true }
+            override fun onDrawerClosed(drawerView: View) { closeDrawer.isEnabled = false }
+        })
 
         if (savedInstanceState == null) {
             homeFragment = HomeFragment()
@@ -84,6 +102,7 @@ class SoloPayMainActivity : AppCompatActivity() {
     }
 
     private fun showPage(index: Int) {
+        binding.solopayToolbar.title = binding.solopayTabs.getTabAt(index)?.text
         val tx = supportFragmentManager.beginTransaction()
         val pages = listOf<Fragment>(homeFragment, bindFragment, permissionsFragment, recordsFragment)
         pages.forEachIndexed { i, f ->

@@ -7,11 +7,6 @@
     android:background="?attr/xui_config_color_background"
     android:orientation="vertical">
 
-    <com.xuexiang.xui.widget.actionbar.TitleBar
-        android:id="@+id/solopay_title_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
     <androidx.core.widget.NestedScrollView style="@style/SoloPayScrollViewStyle">
 
         <LinearLayout

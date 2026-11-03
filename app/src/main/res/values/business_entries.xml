@@ -3,7 +3,7 @@
     <string name="solopay_launcher_name">SoloPay 收款</string>
     <string name="smsforwarder_launcher_name" translatable="false">SmsForwarder</string>
     <string name="forward_delivery_running">正在转发消息</string>
-    <string name="solopay_menu_entry">SoloPay 收款 · %1$s</string>
+    <string name="solopay_menu_entry">收款监听 · %1$s</string>
     <string name="forwarder_client_mode_hint">纯客户端模式仅影响 SmsForwarder，SoloPay 按自己的收款监听开关继续运行。更改立即生效，无需退出 APP。</string>
     <string name="shared_recents_hint">此设置同时影响 SoloPay 和 SmsForwarder 的最近任务显示。</string>
 </resources>

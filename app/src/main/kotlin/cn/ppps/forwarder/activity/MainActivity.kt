@@ -207,7 +207,7 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
     private fun initSlidingMenu(savedInstanceState: Bundle?) {
         mSlidingRootNav = SlidingRootNavBuilder(this).withGravity(if (ResUtils.isRtl(this)) SlideGravity.RIGHT else SlideGravity.LEFT).withMenuOpened(false).withContentClickableWhenMenuOpened(false).withSavedState(savedInstanceState).withMenuLayout(R.layout.menu_left_drawer).inject()
         mLLMenu = mSlidingRootNav.layout.findViewById(R.id.ll_menu)
-        mSlidingRootNav.layout.findViewById<android.widget.Button>(R.id.open_solopay).setOnClickListener {
+        mSlidingRootNav.layout.findViewById<android.view.View>(R.id.open_solopay).setOnClickListener {
             closeMenu()
             BusinessNavigator.openSoloPay(this)
         }
@@ -326,7 +326,7 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
             !credentials.listeningEnabled() -> getString(cn.solopay.R.string.solopay_listening_paused)
             else -> getString(cn.solopay.R.string.solopay_status_enabled)
         }
-        mSlidingRootNav.layout.findViewById<android.widget.Button>(R.id.open_solopay).text =
+        mSlidingRootNav.layout.findViewById<android.widget.TextView>(R.id.solopay_entry_status).text =
             getString(R.string.solopay_menu_entry, status)
     }
 

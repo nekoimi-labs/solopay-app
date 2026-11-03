@@ -1,0 +1,8 @@
+<resources>
+    <color name="solopay_navigation_surface">#FFFFFF</color>
+    <color name="solopay_navigation_text">#1D2939</color>
+    <color name="solopay_navigation_secondary">#526478</color>
+    <color name="solopay_navigation_accent">#145C91</color>
+    <color name="solopay_navigation_highlight">#EAF4FC</color>
+    <color name="solopay_navigation_pressed">#D5E9F9</color>
+</resources>

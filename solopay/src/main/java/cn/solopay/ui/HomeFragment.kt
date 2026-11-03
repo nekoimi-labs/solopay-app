@@ -37,8 +37,6 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         SoloPay.ensureInit(requireContext())
-        binding.solopayTitleBar.setTitle(getString(R.string.solopay_home))
-        binding.solopayTitleBar.disableLeftView()
 
         updateStatus()
 

@@ -1,54 +1,151 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/xui_config_color_white"
-    android:orientation="vertical"
+    android:id="@+id/solopay_drawer"
     tools:ignore="Overdraw">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:paddingStart="16dp"
-        android:paddingEnd="8dp"
-        android:orientation="horizontal">
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/solopay_app_name"
-            android:textColor="@color/solopay_color_primary"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/solopay_switch_business"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:text="@string/solopay_open_forwarder"
-            android:textAllCaps="false"
-            android:textColor="@color/solopay_color_primary" />
+        android:layout_height="match_parent"
+        android:background="?attr/xui_config_color_background"
+        android:orientation="vertical">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/solopay_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@color/solopay_navigation_surface"
+            app:contentInsetStartWithNavigation="0dp"
+            app:navigationContentDescription="@string/solopay_open_menu"
+            app:navigationIcon="@drawable/solopay_ic_menu"
+            app:title="@string/solopay_home"
+            app:titleTextAppearance="@style/SoloPayToolbarTitle"
+            app:titleTextColor="@color/solopay_navigation_text" />
+
+        <FrameLayout
+            android:id="@+id/solopay_container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <View style="@style/SoloPaySeparatorVertical" />
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/solopay_tabs"
+            style="@style/SoloPayTabLayoutStyle"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/xui_actionbar_height"
+            app:tabBackground="@null"
+            app:tabGravity="fill"
+            app:tabIndicatorColor="@color/xui_config_color_transparent"
+            app:tabMode="fixed"
+            app:tabPaddingTop="2dp" />
     </LinearLayout>
 
-    <FrameLayout
-        android:id="@+id/solopay_container"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+    <ScrollView
+        android:layout_width="288dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="@color/solopay_navigation_surface"
+        android:fillViewport="true"
+        android:overScrollMode="never">
 
-    <View style="@style/SoloPaySeparatorVertical" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
 
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/solopay_tabs"
-        style="@style/SoloPayTabLayoutStyle"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/xui_actionbar_height"
-        app:tabBackground="@null"
-        app:tabGravity="fill"
-        app:tabIndicatorColor="@color/xui_config_color_transparent"
-        app:tabMode="fixed"
-        app:tabPaddingTop="2dp" />
-</LinearLayout>
+            <androidx.appcompat.widget.AppCompatImageView
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/solopay_navigation_badge"
+                android:padding="10dp"
+                android:importantForAccessibility="no"
+                app:srcCompat="@drawable/solopay_ic_wallet"
+                app:tint="@color/solopay_navigation_accent" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="@string/solopay_brand_name"
+                android:textColor="@color/solopay_navigation_text"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/solopay_assistant_name"
+                android:textColor="@color/solopay_navigation_secondary"
+                android:textSize="13sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="36dp"
+                android:layout_marginBottom="12dp"
+                android:text="@string/solopay_switch_application"
+                android:textColor="@color/solopay_navigation_secondary"
+                android:textSize="12sp" />
+
+            <LinearLayout
+                android:id="@+id/solopay_switch_business"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="76dp"
+                android:background="@drawable/solopay_business_entry_background"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="14dp">
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:importantForAccessibility="no"
+                    app:srcCompat="@drawable/solopay_ic_forwarder"
+                    app:tint="@color/solopay_navigation_accent" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/solopay_open_forwarder"
+                        android:textColor="@color/solopay_navigation_accent"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/solopay_forwarder_description"
+                        android:textColor="@color/solopay_navigation_secondary"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:importantForAccessibility="no"
+                    app:srcCompat="@drawable/solopay_ic_chevron"
+                    app:tint="@color/solopay_navigation_accent" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</androidx.drawerlayout.widget.DrawerLayout>

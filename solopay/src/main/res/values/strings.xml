@@ -9,6 +9,11 @@
     <string name="solopay_status_bound">绑定状态</string>
     <string name="solopay_scan_bind">扫码绑定</string>
     <string name="solopay_open_forwarder" translatable="false">SmsForwarder</string>
+    <string name="solopay_brand_name" translatable="false">SoloPay</string>
+    <string name="solopay_assistant_name">收款助手</string>
+    <string name="solopay_open_menu">打开菜单</string>
+    <string name="solopay_switch_application">应用切换</string>
+    <string name="solopay_forwarder_description">消息转发与自动任务</string>
     <string name="solopay_listening_enabled">收款监听</string>
     <string name="solopay_status_unbound">未绑定</string>
     <string name="solopay_status_enabled">已启用</string>
