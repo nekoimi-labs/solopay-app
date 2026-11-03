@@ -27,6 +27,22 @@
                 android:textColor="@color/xui_config_color_content_text"
                 android:textSize="15sp" />
 
+            <TextView
+                android:id="@+id/solopay_background_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:textColor="@color/solopay_color_primary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/solopay_lineage_background_hint"
+                android:textColor="@color/xui_config_color_explain_text"
+                android:textSize="13sp" />
+
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/solopay_btn_notif_listener"
                 android:layout_width="match_parent"

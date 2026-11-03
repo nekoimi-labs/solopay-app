@@ -1,7 +1,14 @@
 package cn.ppps.forwarder
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Application
+import android.content.BroadcastReceiver
+import android.os.UserManager
+import cn.solopay.SoloPayHost
+import cn.solopay.SoloPaySync
+import cn.ppps.forwarder.activity.BusinessNavigator
+import cn.ppps.forwarder.utils.BusinessRuntimeCoordinator
 import android.app.PendingIntent
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -78,7 +85,11 @@ import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
 @Suppress("DEPRECATION")
-class App : Application(), CactusCallback, Configuration.Provider by Core {
+class App : Application(), CactusCallback, SoloPayHost, Configuration.Provider {
+
+    private var runtimeInitialized = false
+    private var forwarderInitialized = false
+    private val forwarderReceivers = mutableListOf<BroadcastReceiver>()
 
     val applicationScope = CoroutineScope(SupervisorJob())
     val database by lazy { AppDatabase.getInstance(this) }
@@ -148,7 +159,7 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
     override fun attachBaseContext(base: Context) {
         //super.attachBaseContext(base)
         // 绑定语种
-        super.attachBaseContext(MultiLanguages.attach(base))
+        super.attachBaseContext(if (BusinessRuntimeCoordinator.isUnlocked(base)) MultiLanguages.attach(base) else base)
         //解决4.x运行崩溃的问题
         MultiDex.install(this)
     }
@@ -177,16 +188,66 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
             defaultHandler?.uncaughtException(thread, throwable)
         }
 
-        try {
-            context = applicationContext
+        context = applicationContext
+        SharedPreference.init(this)
+        initializeRuntime()
+    }
+
+    // Run jobs in the actual application process. The old Core provider selected a non-existent
+    // :bg process when another library requested WorkManager before manual initialization.
+    override fun getWorkManagerConfiguration(): Configuration = Configuration.Builder()
+        .setMinimumLoggingLevel(if (BuildConfig.DEBUG) android.util.Log.DEBUG else android.util.Log.INFO)
+        .build()
+
+    /** Called again after first unlock; neither Room nor WorkManager runs during direct boot. */
+    fun initializeRuntime() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
+            !(getSystemService(Context.USER_SERVICE) as UserManager).isUserUnlocked
+        ) return
+        if (!runtimeInitialized) {
+            cn.ppps.forwarder.utils.BusinessStorageMigration.migrate(this)
+            // Initialize once through Configuration.Provider, before libraries can enqueue work.
+            WorkManager.getInstance(this)
             initLibs()
+            runtimeInitialized = true
+            runCatching { SoloPaySync.restore(this) }
+                .onFailure { android.util.Log.e(TAG, "SoloPay background recovery failed", it) }
+        }
+        refreshForwarderMode()
+        BusinessRuntimeCoordinator.restoreNotificationListener(this)
+    }
 
-            //纯客户端模式
-            if (SettingUtils.enablePureClientMode) return
+    override fun openSmsForwarder(activity: Activity) {
+        BusinessNavigator.openSmsForwarder(activity)
+    }
 
-            //初始化WorkManager
-            WorkManager.initialize(this, Configuration.Builder().build())
+    override fun onBusinessLaunchIntent(activity: Activity, intent: Intent) {
+        BusinessNavigator.handleLauncherIntent(activity, intent)
+    }
 
+    override fun onSoloPayStateChanged() {
+        SoloPaySync.restore(this)
+        BusinessRuntimeCoordinator.restoreNotificationListener(this)
+        BusinessNavigator.applyRecentsPreference(this)
+    }
+
+    fun refreshForwarderMode() {
+        if (SettingUtils.enablePureClientMode) {
+            if (!forwarderInitialized) return
+            runCatching { Cactus.instance.unregister(this) }
+                .onFailure { android.util.Log.e(TAG, "SmsForwarder keep-alive stop failed", it) }
+            forwarderReceivers.forEach { receiver -> runCatching { unregisterReceiver(receiver) } }
+            forwarderReceivers.clear()
+            listOf(ForegroundService::class.java, HttpServerService::class.java,
+                LocationService::class.java, BluetoothScanService::class.java).forEach {
+                stopService(Intent(this, it))
+            }
+            forwarderInitialized = false
+            return
+        }
+        if (forwarderInitialized) return
+        forwarderInitialized = true
+        try {
             //动态加载FrpcLib
             val libPath = filesDir.absolutePath + "/libs"
             val soFile = File(libPath)
@@ -202,11 +263,13 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
             //启动前台服务
             val foregroundServiceIntent = Intent(this, ForegroundService::class.java)
             foregroundServiceIntent.action = ACTION_START
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(foregroundServiceIntent)
-            } else {
-                startService(foregroundServiceIntent)
-            }
+            runCatching {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(foregroundServiceIntent)
+                } else {
+                    startService(foregroundServiceIntent)
+                }
+            }.onFailure { Log.e(TAG, "SmsForwarder foreground service start deferred: $it") }
 
             //启动HttpServer
             //"校验签名"模式下密钥为空时拒绝自启，避免开机即处于未认证状态
@@ -226,7 +289,7 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
             //监听电量&充电状态变化
             val batteryReceiver = BatteryReceiver()
             val batteryFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
-            registerReceiver(batteryReceiver, batteryFilter)
+            registerForwarderReceiver(batteryReceiver, batteryFilter)
 
             //监听蓝牙状态变化
             val bluetoothReceiver = BluetoothReceiver()
@@ -241,7 +304,7 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
                 addAction(BluetoothDevice.ACTION_ACL_CONNECTED)
                 addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
             }
-            registerReceiver(bluetoothReceiver, filter)
+            registerForwarderReceiver(bluetoothReceiver, filter)
             if (SettingUtils.enableBluetooth) {
                 val bluetoothScanServiceIntent = Intent(this, BluetoothScanService::class.java)
                 bluetoothScanServiceIntent.action = ACTION_START
@@ -256,7 +319,7 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
                 addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION)
                 //addAction("android.intent.action.DATA_CONNECTION_STATE_CHANGED")
             }
-            registerReceiver(networkReceiver, networkFilter)
+            registerForwarderReceiver(networkReceiver, networkFilter)
 
             //监听锁屏&解锁
             val lockScreenReceiver = LockScreenReceiver()
@@ -265,13 +328,13 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
                 addAction(Intent.ACTION_SCREEN_ON)
                 addAction(Intent.ACTION_USER_PRESENT)
             }
-            registerReceiver(lockScreenReceiver, lockScreenFilter)
+            registerForwarderReceiver(lockScreenReceiver, lockScreenFilter)
             //靠近听筒关屏
             ProximitySensorScreenHelper.refresh(this)
             //Cactus 集成双进程前台服务，JobScheduler，onePix(一像素)，WorkManager，无声音乐
             if (SettingUtils.enableCactus) {
                 //注册广播监听器
-                registerReceiver(CactusReceiver(), IntentFilter().apply {
+                registerForwarderReceiver(CactusReceiver(), IntentFilter().apply {
                     addAction(Cactus.CACTUS_WORK)
                     addAction(Cactus.CACTUS_STOP)
                     addAction(Cactus.CACTUS_BACKGROUND)
@@ -319,8 +382,13 @@ class App : Application(), CactusCallback, Configuration.Provider by Core {
 
         } catch (e: Exception) {
             e.printStackTrace()
-            Log.e(TAG, "onCreate: $e")
+            Log.e(TAG, "SmsForwarder initialization failed: $e")
         }
+    }
+
+    private fun registerForwarderReceiver(receiver: BroadcastReceiver, filter: IntentFilter) {
+        registerReceiver(receiver, filter)
+        forwarderReceivers.add(receiver)
     }
 
     /**

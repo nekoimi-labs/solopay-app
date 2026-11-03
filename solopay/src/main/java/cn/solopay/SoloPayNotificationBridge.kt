@@ -3,12 +3,15 @@ package cn.solopay
 import android.app.Notification
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import android.service.notification.StatusBarNotification
 import cn.solopay.db.SignalOutboxEntity
-import cn.solopay.service.SoloPayKeepAliveService
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
+import cn.solopay.background.DeliveryWakeLock
+import kotlinx.coroutines.sync.withLock
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -28,12 +31,13 @@ object SoloPayNotificationBridge {
     }
 
     fun onNotificationPosted(context: Context, sbn: StatusBarNotification) {
-        SoloPay.ensureInit(context)
         val pkg = sbn.packageName
         if (pkg != "com.tencent.mm" && pkg != "com.eg.android.AlipayGphone") return
 
         val creds = CredentialsStore(context)
-        if (!creds.isBound()) return
+        if (!creds.shouldListen()) return
+        val binding = creds.binding() ?: return
+        SoloPay.ensureInit(context)
 
         val notification = sbn.notification ?: return
         val extras = notification.extras ?: return
@@ -50,43 +54,58 @@ object SoloPayNotificationBridge {
 
         val parsed = PaymentNotificationParser.parse(pkg, title, text) ?: return
         val extId = externalEventId(pkg, sbn.postTime, title, text)
-        if (NotificationDedup.shouldSkip(extId)) return
+        if (NotificationDedup.shouldSkip("${binding.sessionId}:$extId")) return
+        val postTime = sbn.postTime
 
+        // Acquire before leaving the system callback so CPU sleep cannot interrupt queue persistence.
+        val lease = DeliveryWakeLock.acquire(context, "payment-notification", 60_000)
         SoloPay.ioScope.launch {
-            val dao = SoloPay.db.outboxDao()
-            if (dao.byExternalId(extId) != null) return@launch
+            try {
+                val queued = CredentialsStore.bindingMutex.withLock {
+                    if (creds.binding()?.sessionId != binding.sessionId) return@withLock false
+                    val dao = SoloPay.db.outboxDao()
+                    if (dao.byExternalId(extId) != null) return@withLock false
 
-            val raw = JsonObject()
-            raw.addProperty("title", title.take(200))
-            raw.addProperty("summary", text.take(2000))
-            raw.addProperty("parser_version", 1)
-            raw.addProperty("post_time", sbn.postTime)
+                    val raw = JsonObject()
+                    raw.addProperty("title", title.take(200))
+                    raw.addProperty("summary", text.take(2000))
+                    raw.addProperty("parser_version", 1)
+                    raw.addProperty("post_time", postTime)
 
-            val body = JsonObject()
-            body.addProperty("schema_version", "1.0")
-            body.addProperty("channel_type", parsed.channelType)
-            body.addProperty("amount_cents", parsed.amountCents.toString())
-            body.addProperty("currency", "CNY")
-            body.addProperty("paid_at", paidAtUtc.get()!!.format(Date(sbn.postTime)))
-            body.addProperty("remark", parsed.remark)
-            body.addProperty("external_event_id", extId)
-            body.add("raw_payload", raw)
+                    val body = JsonObject()
+                    body.addProperty("schema_version", "1.0")
+                    body.addProperty("channel_type", parsed.channelType)
+                    body.addProperty("amount_cents", parsed.amountCents.toString())
+                    body.addProperty("currency", "CNY")
+                    body.addProperty("paid_at", paidAtUtc.get()!!.format(Date(postTime)))
+                    body.addProperty("remark", parsed.remark)
+                    body.addProperty("external_event_id", extId)
+                    body.add("raw_payload", raw)
 
-            val bodyJson = gson.toJson(body)
-            val now = System.currentTimeMillis()
-            val inserted = dao.insert(
-                SignalOutboxEntity(
-                    externalEventId = extId,
-                    bodyJson = bodyJson,
-                    channelType = parsed.channelType,
-                    amountCents = parsed.amountCents,
-                    status = SignalOutboxEntity.STATUS_PENDING,
-                    createdAt = now,
-                    updatedAt = now,
-                ),
-            )
-            if (inserted != -1L) {
-                SoloPayKeepAliveService.start(context)
+                    val bodyJson = gson.toJson(body)
+                    val now = System.currentTimeMillis()
+                    val inserted = dao.insert(
+                        SignalOutboxEntity(
+                            externalEventId = extId,
+                            bodyJson = bodyJson,
+                            channelType = parsed.channelType,
+                            amountCents = parsed.amountCents,
+                            status = SignalOutboxEntity.STATUS_PENDING,
+                            createdAt = now,
+                            updatedAt = now,
+                            bindingId = binding.sessionId,
+                        ),
+                    )
+                    inserted != -1L
+                }
+                if (queued) SoloPaySync.requestImmediate(context)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // A database/scheduling failure must not crash the shared forwarding process.
+                Log.e("SoloPaySync", "Payment notification persistence or sync scheduling failed", e)
+            } finally {
+                lease.close()
             }
         }
     }

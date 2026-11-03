@@ -921,15 +921,8 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding?>(), View.OnClickL
         sbExcludeFromRecents.isChecked = SettingUtils.enableExcludeFromRecents
         sbExcludeFromRecents.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
             SettingUtils.enableExcludeFromRecents = isChecked
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                val am = App.context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-                am.let {
-                    val tasks = it.appTasks
-                    if (!tasks.isNullOrEmpty()) {
-                        tasks[0].setExcludeFromRecents(true)
-                    }
-                }
-            }
+            cn.ppps.forwarder.activity.BusinessNavigator.applyRecentsPreference(requireContext())
+            XToastUtils.info(getString(R.string.shared_recents_hint))
         }
     }
 
@@ -1123,11 +1116,9 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding?>(), View.OnClickL
         switchDirectlyToClient.isChecked = SettingUtils.enablePureClientMode
         switchDirectlyToClient.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
             SettingUtils.enablePureClientMode = isChecked
-            if (isChecked) {
-                MaterialDialog.Builder(requireContext()).content(getString(R.string.enabling_pure_client_mode)).positiveText(R.string.lab_yes).onPositive { _: MaterialDialog?, _: DialogAction? ->
-                    XUtil.exitApp()
-                }.negativeText(R.string.lab_no).show()
-            }
+            (requireActivity().application as App).refreshForwarderMode()
+            cn.ppps.forwarder.utils.BusinessRuntimeCoordinator.restoreNotificationListener(requireContext())
+            XToastUtils.info(getString(R.string.forwarder_client_mode_hint))
         }
     }
 

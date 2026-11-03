@@ -1,87 +1,99 @@
 package cn.solopay.service
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
-import androidx.core.app.NotificationCompat
+import android.os.SystemClock
+import android.util.Log
 import cn.solopay.R
-import cn.solopay.SoloPay
+import cn.solopay.SoloPaySync
+import cn.solopay.background.DeliveryNotification
+import cn.solopay.background.DeliveryWakeLock
 import cn.solopay.flushOutbox
+import cn.solopay.ui.SoloPayMainActivity
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-/**
- * 前台服务：短时启动以完成队列上报（满足 Android 8+ 对 startForegroundService 的时限要求）。
- */
+/** A short foreground sync, never a second permanent notification listener. */
 class SoloPayKeepAliveService : Service() {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private var job: Job? = null
+    private var dirty = false
+    private var latestStartId = 0
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    override fun onCreate() {
-        super.onCreate()
-        SoloPay.ensureInit(this)
-    }
-
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        SoloPay.ensureInit(this)
-        ensureChannel()
-        val notif = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.stat_sys_upload)
-            .setContentTitle(getString(R.string.solopay_keep_alive_channel))
-            .setContentText(getString(R.string.solopay_keep_alive_text))
-            .setOngoing(true)
-            .build()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(
-                NOTIF_ID,
-                notif,
-                android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
+        latestStartId = startId
+        dirty = true
+        try {
+            val info = DeliveryNotification.foregroundInfo(
+                this, 11001, getString(R.string.solopay_app_name),
+                getString(R.string.solopay_keep_alive_text),
+                Intent(this, SoloPayMainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),
             )
-        } else {
-            startForeground(NOTIF_ID, notif)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(info.notificationId, info.notification, info.foregroundServiceType)
+            } else startForeground(info.notificationId, info.notification)
+        } catch (e: Exception) {
+            Log.w("SoloPaySync", "Foreground sync unavailable; keeping durable retry", e)
+            runCatching { SoloPaySync.enqueue(this) }
+                .onFailure { Log.e("SoloPaySync", "Retry scheduling failed; record remains in the outbox", it) }
+            stopSelf(startId)
+            return START_NOT_STICKY
         }
-        SoloPay.ioScope.launch {
+        if (job?.isActive == true) return START_NOT_STICKY
+        val lease = DeliveryWakeLock.acquire(this, "payment-foreground-sync", 60_000)
+        job = scope.launch {
+            val deadline = SystemClock.elapsedRealtime() + 30_000
             try {
-                flushOutbox(this@SoloPayKeepAliveService)
+                do {
+                    dirty = false
+                    val retry = withContext(Dispatchers.IO) {
+                        flushOutbox(this@SoloPayKeepAliveService, maxDurationMillis = 30_000)
+                    }
+                    if (retry) break // Persisted expedited work applies network backoff.
+                } while (dirty && SystemClock.elapsedRealtime() < deadline)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.w("SoloPaySync", "Foreground upload deferred to saved retry", e)
             } finally {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    stopForeground(Service.STOP_FOREGROUND_REMOVE)
-                } else {
-                    @Suppress("DEPRECATION")
-                    stopForeground(true)
-                }
-                stopSelf()
+                lease.close()
+                @Suppress("DEPRECATION")
+                stopForeground(true)
+                stopSelfResult(latestStartId)
             }
         }
         return START_NOT_STICKY
     }
 
-    private fun ensureChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            val ch = NotificationChannel(
-                CHANNEL_ID,
-                getString(R.string.solopay_keep_alive_channel),
-                NotificationManager.IMPORTANCE_LOW,
-            )
-            nm.createNotificationChannel(ch)
-        }
+    override fun onDestroy() {
+        scope.cancel()
+        super.onDestroy()
     }
 
     companion object {
-        private const val CHANNEL_ID = "solopay_keep_alive"
-        private const val NOTIF_ID = 11001
-
-        fun start(context: Context) {
-            val i = Intent(context, SoloPayKeepAliveService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(i)
-            } else {
-                context.startService(i)
-            }
+        /** Android 12+ can deny background FGS starts; the caller must retain its queued retry. */
+        fun tryStart(context: Context): Boolean = try {
+            val intent = Intent(context, SoloPayKeepAliveService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) context.startForegroundService(intent)
+            else context.startService(intent)
+            true
+        } catch (e: IllegalStateException) {
+            Log.d("SoloPaySync", "Background foreground-service start denied; using current execution window")
+            false
+        } catch (e: SecurityException) {
+            Log.w("SoloPaySync", "Foreground-service permission unavailable", e)
+            false
         }
     }
 }

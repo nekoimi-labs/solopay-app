@@ -9,6 +9,8 @@ import androidx.work.CoroutineWorker
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import androidx.work.ForegroundInfo
+import cn.ppps.forwarder.utils.ForwardDelivery
 import cn.ppps.forwarder.App
 import cn.ppps.forwarder.R
 import cn.ppps.forwarder.core.Core
@@ -78,6 +80,8 @@ class ActionWorker(context: Context, params: WorkerParameters) : CoroutineWorker
 
     private val TAG: String = ActionWorker::class.java.simpleName
     private var taskId = -1L
+
+    override suspend fun getForegroundInfo(): ForegroundInfo = ForwardDelivery.foregroundInfo(applicationContext)
 
     override suspend fun doWork(): Result {
         taskId = inputData.getLong(TaskWorker.TASK_ID, -1L)

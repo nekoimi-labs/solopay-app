@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit
 class DeviceApiClient(
     private val baseUrl: String,
     private val deviceSecret: String?,
+    private val callTimeoutSeconds: Long = 30,
 ) {
 
     private val gson = Gson()
@@ -20,6 +21,7 @@ class DeviceApiClient(
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
+        .callTimeout(callTimeoutSeconds, TimeUnit.SECONDS)
         .build()
 
     private val root = baseUrl.trimEnd('/')

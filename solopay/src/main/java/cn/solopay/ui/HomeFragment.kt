@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -39,9 +40,7 @@ class HomeFragment : Fragment() {
         binding.solopayTitleBar.setTitle(getString(R.string.solopay_home))
         binding.solopayTitleBar.disableLeftView()
 
-        val creds = CredentialsStore(requireContext())
-        binding.solopayBoundStatus.text =
-            if (creds.isBound()) getString(R.string.solopay_bound_yes) else getString(R.string.solopay_bound_no)
+        updateStatus()
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -85,9 +84,19 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        val creds = CredentialsStore(requireContext())
-        binding.solopayBoundStatus.text =
-            if (creds.isBound()) getString(R.string.solopay_bound_yes) else getString(R.string.solopay_bound_no)
+        updateStatus()
+    }
+
+    private fun updateStatus() {
+        val context = requireContext()
+        val creds = CredentialsStore(context)
+        binding.solopayBoundStatus.text = when {
+            !creds.isBound() -> getString(R.string.solopay_bound_no)
+            !creds.listeningEnabled() -> getString(R.string.solopay_listening_paused)
+            !NotificationManagerCompat.getEnabledListenerPackages(context).contains(context.packageName) ->
+                getString(R.string.solopay_listening_permission_missing)
+            else -> getString(R.string.solopay_listening_active)
+        }
     }
 
     override fun onDestroyView() {

@@ -8,8 +8,23 @@
     <string name="solopay_status_listen">监听状态</string>
     <string name="solopay_status_bound">绑定状态</string>
     <string name="solopay_scan_bind">扫码绑定</string>
-    <string name="solopay_open_forwarder">打开原转发器界面（高级）</string>
+    <string name="solopay_open_forwarder" translatable="false">SmsForwarder</string>
+    <string name="solopay_listening_enabled">收款监听</string>
+    <string name="solopay_status_unbound">未绑定</string>
+    <string name="solopay_status_enabled">已启用</string>
+    <string name="solopay_listening_hint">暂停后不再采集新的收款通知，已采集记录继续同步；SmsForwarder 的功能不受影响。</string>
+    <string name="solopay_listening_active">收款监听已开启</string>
+    <string name="solopay_listening_paused">收款监听已暂停</string>
+    <string name="solopay_listening_permission_missing">请授予通知使用权后接收收款通知</string>
+    <string name="solopay_unbind">解除设备绑定</string>
+    <string name="solopay_unbind_confirm">解除本机绑定后停止 SoloPay 上报，保留本机收款记录。SmsForwarder 的规则和转发不受影响。</string>
+    <string name="solopay_unbind_done">已解除本机绑定</string>
+    <string name="solopay_unbind_failed">解除绑定失败，请重试</string>
     <string name="solopay_keep_alive_channel">收款助手运行状态</string>
+    <string name="solopay_delivery_channel">后台消息发送</string>
+    <string name="solopay_battery_optimized">后台运行：尚未关闭电池优化，长时间息屏时发送可能延迟</string>
+    <string name="solopay_battery_unrestricted">后台运行：已忽略电池优化</string>
+    <string name="solopay_lineage_background_hint">LineageOS 建议将本应用、微信和支付宝的电池策略设为「无限制」，并允许后台联网。两个入口共用本应用的系统设置。短时后台发送仍受系统网络和调度策略影响。</string>
     <string name="solopay_keep_alive_text">正在同步收款记录到 SoloPay</string>
     <string name="solopay_section_today">今日收款</string>
     <string name="solopay_today_amount_hint">今日已上报金额（元）</string>
@@ -17,7 +32,7 @@
     <string name="solopay_bind_info_title">当前绑定信息</string>
     <string name="solopay_api_base_label">API 基地址</string>
     <string name="solopay_device_id_label">device_id</string>
-    <string name="solopay_perm_intro">为正常接收微信 / 支付宝收款通知，请依次完成以下设置。</string>
+    <string name="solopay_perm_intro">收款监听需要通知使用权，此授权与 SmsForwarder 的应用消息转发共用，撤销后两边的通知功能都会受影响。短信权限由 SmsForwarder 按需申请。</string>
     <string name="solopay_perm_notif_listener">打开「通知使用权」设置</string>
     <string name="solopay_perm_battery">忽略电池优化（建议）</string>
     <string name="solopay_perm_post_notifications">通知权限（Android 13+）</string>

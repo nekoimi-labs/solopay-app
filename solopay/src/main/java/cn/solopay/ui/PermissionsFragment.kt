@@ -6,6 +6,8 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.content.Context
 import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
@@ -97,6 +99,16 @@ class PermissionsFragment : Fragment() {
         ) {
             Toast.makeText(requireContext(), "已授予通知权限", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val context = requireContext()
+        val unrestricted = Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||
+            (context.getSystemService(Context.POWER_SERVICE) as PowerManager)
+                .isIgnoringBatteryOptimizations(context.packageName)
+        binding.solopayBackgroundStatus.setText(if (unrestricted)
+            R.string.solopay_battery_unrestricted else R.string.solopay_battery_optimized)
     }
 
     override fun onDestroyView() {

@@ -3,6 +3,8 @@ package cn.ppps.forwarder.workers
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import androidx.work.ForegroundInfo
+import cn.ppps.forwarder.utils.ForwardDelivery
 import com.google.gson.Gson
 import cn.ppps.forwarder.core.Core
 import cn.ppps.forwarder.database.entity.Logs
@@ -15,6 +17,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class SendLogicWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
+
+    override suspend fun getForegroundInfo(): ForegroundInfo = ForwardDelivery.foregroundInfo(applicationContext)
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
 

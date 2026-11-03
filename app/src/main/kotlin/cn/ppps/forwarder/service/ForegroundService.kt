@@ -29,6 +29,7 @@ import cn.ppps.forwarder.utils.ACTION_STOP
 import cn.ppps.forwarder.utils.ACTION_STOP_ALARM
 import cn.ppps.forwarder.utils.ACTION_UPDATE_NOTIFICATION
 import cn.ppps.forwarder.utils.CommonUtils
+import cn.ppps.forwarder.utils.BusinessRuntimeCoordinator
 import cn.ppps.forwarder.utils.EVENT_ALARM_ACTION
 import cn.ppps.forwarder.utils.EVENT_FRPC_RUNNING_ERROR
 import cn.ppps.forwarder.utils.EVENT_FRPC_RUNNING_SUCCESS
@@ -250,7 +251,7 @@ class ForegroundService : Service() {
 
     override fun onDestroy() {
         //非纯客户端模式
-        if (!SettingUtils.enablePureClientMode) stopForegroundService()
+        if (isRunning) stopForegroundService()
         if (::flashUtils.isInitialized) {
             flashUtils.release()
         }
@@ -270,9 +271,7 @@ class ForegroundService : Service() {
 
         try {
             //开关通知监听服务
-            if (SettingUtils.enableAppNotify && CommonUtils.isNotificationListenerServiceEnabled(this)) {
-                CommonUtils.toggleNotificationListenerService(this)
-            }
+            BusinessRuntimeCoordinator.restoreNotificationListener(this)
 
             //启动定时任务
             GlobalScope.async(Dispatchers.IO) {

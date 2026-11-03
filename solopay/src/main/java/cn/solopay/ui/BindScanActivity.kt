@@ -6,6 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import cn.solopay.CredentialsStore
+import cn.solopay.SoloPayHost
 import cn.solopay.SoloPaySecrets
 import cn.solopay.R
 import cn.solopay.api.DeviceApiClient
@@ -47,10 +48,15 @@ class BindScanActivity : AppCompatActivity() {
             val (api, token, deviceId) = parsed
             val secret = SoloPaySecrets.randomDeviceSecret()
             val res = withContext(Dispatchers.IO) {
-                DeviceApiClient(api, null).bind(deviceId, secret, token)
+                runCatching { DeviceApiClient(api, null).bind(deviceId, secret, token) }
+            }.getOrElse { error ->
+                Toast.makeText(this@BindScanActivity, getString(R.string.solopay_bind_fail, error.message.orEmpty()), Toast.LENGTH_LONG).show()
+                finish()
+                return@launch
             }
             if (res.httpStatus in 200..299 && (res.businessCode == null || res.businessCode == 0)) {
                 CredentialsStore(this@BindScanActivity).saveBinding(api, deviceId, secret)
+                (application as? SoloPayHost)?.onSoloPayStateChanged()
                 Toast.makeText(this@BindScanActivity, R.string.solopay_bind_ok, Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(

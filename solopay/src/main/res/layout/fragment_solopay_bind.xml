@@ -89,15 +89,30 @@
                 android:textColor="@android:color/white"
                 app:backgroundTint="@color/solopay_color_primary" />
 
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/solopay_listening_enabled"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:layout_margin="14dp"
+                android:text="@string/solopay_listening_enabled" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="14dp"
+                android:text="@string/solopay_listening_hint"
+                android:textColor="@color/xui_config_color_explain_text"
+                android:textSize="13sp" />
             <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/solopay_btn_advanced"
+                android:id="@+id/solopay_btn_unbind"
                 style="@style/Widget.AppCompat.Button.Borderless"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
-                android:text="@string/solopay_open_forwarder"
+                android:text="@string/solopay_unbind"
                 android:textColor="@color/solopay_color_primary" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

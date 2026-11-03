@@ -1,12 +1,13 @@
 package cn.solopay.ui
 
 import android.os.Bundle
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import cn.solopay.CredentialsStore
+import androidx.lifecycle.Lifecycle
 import cn.solopay.R
 import cn.solopay.databinding.ActivitySoloPayMainBinding
-import cn.solopay.service.SoloPayKeepAliveService
+import cn.solopay.SoloPayHost
 import com.google.android.material.tabs.TabLayout
 import com.xuexiang.xui.XUI
 
@@ -25,6 +26,9 @@ class SoloPayMainActivity : AppCompatActivity() {
         cn.solopay.SoloPay.ensureInit(applicationContext)
         binding = ActivitySoloPayMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.solopaySwitchBusiness.setOnClickListener {
+            (application as? SoloPayHost)?.openSmsForwarder(this)
+        }
 
         if (savedInstanceState == null) {
             homeFragment = HomeFragment()
@@ -36,6 +40,9 @@ class SoloPayMainActivity : AppCompatActivity() {
                 .add(R.id.solopay_container, bindFragment, TAG_BIND).hide(bindFragment)
                 .add(R.id.solopay_container, permissionsFragment, TAG_PERM).hide(permissionsFragment)
                 .add(R.id.solopay_container, recordsFragment, TAG_REC).hide(recordsFragment)
+                .setMaxLifecycle(bindFragment, Lifecycle.State.STARTED)
+                .setMaxLifecycle(permissionsFragment, Lifecycle.State.STARTED)
+                .setMaxLifecycle(recordsFragment, Lifecycle.State.STARTED)
                 .commitNow()
         } else {
             homeFragment = supportFragmentManager.findFragmentByTag(TAG_HOME) as HomeFragment
@@ -71,20 +78,24 @@ class SoloPayMainActivity : AppCompatActivity() {
         outState.putInt(STATE_TAB, binding.solopayTabs.selectedTabPosition)
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        (application as? SoloPayHost)?.onBusinessLaunchIntent(this, intent)
+    }
+
     private fun showPage(index: Int) {
         val tx = supportFragmentManager.beginTransaction()
         val pages = listOf<Fragment>(homeFragment, bindFragment, permissionsFragment, recordsFragment)
         pages.forEachIndexed { i, f ->
             if (i == index) tx.show(f) else tx.hide(f)
+            tx.setMaxLifecycle(f, if (i == index) Lifecycle.State.RESUMED else Lifecycle.State.STARTED)
         }
         tx.commitNowAllowingStateLoss()
     }
 
     override fun onResume() {
         super.onResume()
-        if (CredentialsStore(this).isBound()) {
-            SoloPayKeepAliveService.start(this)
-        }
+        (application as? SoloPayHost)?.onSoloPayStateChanged()
     }
 
     companion object {

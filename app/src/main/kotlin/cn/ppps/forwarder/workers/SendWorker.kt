@@ -8,6 +8,9 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import androidx.work.ForegroundInfo
+import androidx.work.OutOfQuotaPolicy
+import cn.ppps.forwarder.utils.ForwardDelivery
 import com.google.gson.Gson
 import cn.ppps.forwarder.R
 import cn.ppps.forwarder.core.Core
@@ -37,6 +40,8 @@ import kotlinx.coroutines.withContext
 class SendWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
     private val TAG: String = SendWorker::class.java.simpleName
+
+    override suspend fun getForegroundInfo(): ForegroundInfo = ForwardDelivery.foregroundInfo(applicationContext)
 
     @SuppressLint("SimpleDateFormat")
     override suspend fun doWork(): Result {
@@ -171,7 +176,8 @@ class SendWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
                 .putString(TaskWorker.TASK_ACTIONS, task.actions)
                 .putString(TaskWorker.MSG_INFO, msgInfoJson)
                 .build()
-            val actionRequest = OneTimeWorkRequestBuilder<ActionWorker>().setInputData(actionData).build()
+            val actionRequest = OneTimeWorkRequestBuilder<ActionWorker>().setInputData(actionData)
+                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST).build()
             WorkManager.getInstance().enqueue(actionRequest)
         }
     }

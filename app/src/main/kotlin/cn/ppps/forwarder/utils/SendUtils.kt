@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import androidx.work.OutOfQuotaPolicy
 import cn.ppps.forwarder.R
 import cn.ppps.forwarder.core.Core
 import cn.ppps.forwarder.database.entity.MsgAndLogs
@@ -43,7 +44,6 @@ import cn.ppps.forwarder.utils.sender.WebhookUtils
 import cn.ppps.forwarder.utils.sender.WeworkAgentUtils
 import cn.ppps.forwarder.utils.sender.WeworkRobotUtils
 import cn.ppps.forwarder.workers.SendLogicWorker
-import cn.ppps.forwarder.workers.SendWorker
 import cn.ppps.forwarder.workers.UpdateLogsWorker
 import com.google.gson.Gson
 import com.jeremyliao.liveeventbus.LiveEventBus
@@ -59,12 +59,7 @@ object SendUtils {
         val msgInfo = MsgInfo(item.msg.type, item.msg.from, item.msg.content, item.msg.time, item.msg.simInfo, item.msg.simSlot, item.msg.subId)
         Log.d(TAG, "msgInfo = $msgInfo")
 
-        val request = OneTimeWorkRequestBuilder<SendWorker>().setInputData(
-            workDataOf(
-                Worker.SEND_MSG_INFO to Gson().toJson(msgInfo)
-            )
-        ).build()
-        WorkManager.getInstance(XUtil.getContext()).enqueue(request)
+        ForwardDelivery.enqueue(XUtil.getContext(), Gson().toJson(msgInfo))
     }
 
     //重试发送消息
@@ -90,6 +85,7 @@ object SendUtils {
     //匹配发送通道发送消息
     @SuppressLint("SimpleDateFormat")
     fun sendMsgSender(msgInfo: MsgInfo, rule: Rule, senderIndex: Int = 0, logId: Long = 0L, msgId: Long = 0L) {
+        ForwardDelivery.begin(logId)
         try {
             val sender = rule.senderList[senderIndex]
             if (sender.status != 1) {
@@ -223,7 +219,7 @@ object SendUtils {
                     Worker.SENDER_INDEX to senderIndex + 1,
                     Worker.MSG_ID to msgId,
                 )
-            ).build()
+            ).setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST).build()
             WorkManager.getInstance(XUtil.getContext()).enqueue(request)
         }
     }
@@ -251,6 +247,7 @@ object SendUtils {
             )
         ).build()
         WorkManager.getInstance(XUtil.getContext()).enqueue(request)
+        if (status == 0 || status == 2) ForwardDelivery.complete(logId)
     }
 
 }

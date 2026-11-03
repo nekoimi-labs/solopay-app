@@ -91,7 +91,6 @@
     <application
         android:name=".App"
         android:configChanges="screenSize|keyboardHidden|orientation|keyboard"
-        android:defaultToDeviceProtectedStorage="true"
         android:directBootAware="true"
         android:enableOnBackInvokedCallback="false"
         android:fullBackupContent="@xml/backup_descriptor"
@@ -112,6 +111,40 @@
             android:name="ScopedStorage"
             android:value="true" />
 
+        <activity
+            android:name=".activity.SoloPayEntryActivity"
+            android:exported="false"
+            android:noHistory="true"
+            android:relinquishTaskIdentity="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+        <activity
+            android:name=".activity.SmsForwarderEntryActivity"
+            android:exported="false"
+            android:noHistory="true"
+            android:relinquishTaskIdentity="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+        <activity-alias
+            android:name=".SoloPayLauncher"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/solopay_launcher_name"
+            android:targetActivity=".activity.SoloPayEntryActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".SmsForwarderLauncher"
+            android:exported="true"
+            android:icon="@drawable/ic_forwarder"
+            android:label="@string/smsforwarder_launcher_name"
+            android:targetActivity=".activity.SmsForwarderEntryActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
         <activity
             android:name=".activity.SplashActivity"
             android:configChanges="screenSize|keyboardHidden|orientation|keyboard"
@@ -301,6 +334,7 @@
                 <action android:name="android.intent.action.USER_PRESENT" />
                 <action android:name="android.intent.action.PACKAGE_RESTARTED" />
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.USER_UNLOCKED" />
             </intent-filter>
         </receiver>
         <receiver

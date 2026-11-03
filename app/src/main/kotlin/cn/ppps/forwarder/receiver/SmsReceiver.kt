@@ -4,9 +4,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.provider.Telephony
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.google.gson.Gson
 import cn.ppps.forwarder.App
 import cn.ppps.forwarder.entity.MsgInfo
@@ -14,8 +11,7 @@ import cn.ppps.forwarder.utils.Log
 import cn.ppps.forwarder.utils.PhoneUtils
 import cn.ppps.forwarder.utils.SettingUtils
 import cn.ppps.forwarder.utils.SmsCommandUtils
-import cn.ppps.forwarder.utils.Worker
-import cn.ppps.forwarder.workers.SendWorker
+import cn.ppps.forwarder.utils.ForwardDelivery
 import com.xuexiang.xrouter.utils.TextUtils
 import java.util.Date
 
@@ -109,12 +105,21 @@ class SmsReceiver : BroadcastReceiver() {
             val msgInfo = MsgInfo("sms", from, msg, Date(), simInfo, simSlot, subscription)
             Log.d(TAG, "msgInfo = $msgInfo")
 
-            val request = OneTimeWorkRequestBuilder<SendWorker>().setInputData(
-                workDataOf(
-                    Worker.SEND_MSG_INFO to Gson().toJson(msgInfo)
-                )
-            ).build()
-            WorkManager.getInstance(context).enqueue(request)
+            val pending = goAsync()
+            val finished = java.util.concurrent.atomic.AtomicBoolean(false)
+            val handler = android.os.Handler(android.os.Looper.getMainLooper())
+            val finish = Runnable { if (finished.compareAndSet(false, true)) pending.finish() }
+            handler.postDelayed(finish, 8_000)
+            try {
+                ForwardDelivery.enqueue(context, Gson().toJson(msgInfo)).result.addListener({
+                    handler.removeCallbacks(finish)
+                    finish.run()
+                }, java.util.concurrent.Executor { it.run() })
+            } catch (e: Exception) {
+                handler.removeCallbacks(finish)
+                finish.run()
+                throw e
+            }
 
         } catch (e: Exception) {
             Log.e(TAG, "Parsing SMS failed: " + e.message.toString())

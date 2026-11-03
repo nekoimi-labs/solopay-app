@@ -30,6 +30,8 @@ android {
 }
 
 dependencies {
+    implementation 'androidx.work:work-runtime-ktx:2.8.1'
+    testImplementation rootProject.ext.deps.junit
     // 与 app 模块对齐，降低传递 Kotlin stdlib 版本，避免与 XRouter transform 冲突
     implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'

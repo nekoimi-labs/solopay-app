@@ -102,17 +102,7 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
         initData()
         initViews()
         initSlidingMenu(savedInstanceState)
-
-        //不在最近任务列表中显示
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && SettingUtils.enableExcludeFromRecents) {
-            val am = App.context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-            am.let {
-                val tasks = it.appTasks
-                if (!tasks.isNullOrEmpty()) {
-                    tasks[0].setExcludeFromRecents(true)
-                }
-            }
-        }
+        BusinessNavigator.applyRecentsPreference(this)
 
         //检查通知权限是否获取
         XXPermissions.with(this)
@@ -126,7 +116,7 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
                         return
                     }
                     //启动前台服务
-                    if (!ForegroundService.isRunning) {
+                    if (!ForegroundService.isRunning && !SettingUtils.enablePureClientMode) {
                         val serviceIntent = Intent(getTopActivity(), ForegroundService::class.java)
                         serviceIntent.action = ACTION_START
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -148,6 +138,11 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
 
     override val isSupportSlideBack: Boolean
         get() = false
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        BusinessNavigator.handleLauncherIntent(this, intent)
+    }
 
     private fun initViews() {
         WidgetUtils.clearActivityBackground(this)
@@ -193,13 +188,11 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
     //按返回键不退出回到桌面
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        val intent = Intent(Intent.ACTION_MAIN)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        intent.addCategory(Intent.CATEGORY_HOME)
-        startActivity(intent)
+        if (!isTaskRoot) finish() else moveTaskToBack(true)
     }
 
     fun openMenu() {
+        updateSoloPayMenu()
         mSlidingRootNav.openMenu()
     }
 
@@ -214,6 +207,11 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
     private fun initSlidingMenu(savedInstanceState: Bundle?) {
         mSlidingRootNav = SlidingRootNavBuilder(this).withGravity(if (ResUtils.isRtl(this)) SlideGravity.RIGHT else SlideGravity.LEFT).withMenuOpened(false).withContentClickableWhenMenuOpened(false).withSavedState(savedInstanceState).withMenuLayout(R.layout.menu_left_drawer).inject()
         mLLMenu = mSlidingRootNav.layout.findViewById(R.id.ll_menu)
+        mSlidingRootNav.layout.findViewById<android.widget.Button>(R.id.open_solopay).setOnClickListener {
+            closeMenu()
+            BusinessNavigator.openSoloPay(this)
+        }
+        updateSoloPayMenu()
         ViewUtils.setVisibility(mLLMenu, false)
         mAdapter = DrawerAdapter(
             mutableListOf(
@@ -241,6 +239,7 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
         mSlidingRootNav.isMenuLocked = false
         mSlidingRootNav.layout.addDragStateListener(object : DragStateListener {
             override fun onDragStart() {
+                updateSoloPayMenu()
                 ViewUtils.setVisibility(mLLMenu, true)
             }
 
@@ -318,6 +317,17 @@ class MainActivity : BaseActivity<ActivityMainBinding?>(), DrawerAdapter.OnItemS
             POS_HELP -> AgentWebActivity.goWeb(this, getString(R.string.url_help))
             POS_ABOUT -> openNewPage(AboutFragment::class.java)
         }
+    }
+
+    private fun updateSoloPayMenu() {
+        val credentials = cn.solopay.CredentialsStore(this)
+        val status = when {
+            !credentials.isBound() -> getString(cn.solopay.R.string.solopay_status_unbound)
+            !credentials.listeningEnabled() -> getString(cn.solopay.R.string.solopay_listening_paused)
+            else -> getString(cn.solopay.R.string.solopay_status_enabled)
+        }
+        mSlidingRootNav.layout.findViewById<android.widget.Button>(R.id.open_solopay).text =
+            getString(R.string.solopay_menu_entry, status)
     }
 
     private fun createItemFor(position: Int): DrawerItem<*> {

@@ -8,6 +8,31 @@
     android:orientation="vertical"
     tools:ignore="Overdraw">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="8dp"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/solopay_app_name"
+            android:textColor="@color/solopay_color_primary"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/solopay_switch_business"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:text="@string/solopay_open_forwarder"
+            android:textAllCaps="false"
+            android:textColor="@color/solopay_color_primary" />
+    </LinearLayout>
+
     <FrameLayout
         android:id="@+id/solopay_container"
         android:layout_width="match_parent"

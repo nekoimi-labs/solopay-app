@@ -2,21 +2,18 @@ package cn.ppps.forwarder.service
 
 import android.annotation.SuppressLint
 import android.app.Notification
-import android.content.ComponentName
 import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.workDataOf
 import cn.ppps.forwarder.core.Core
 import cn.ppps.forwarder.database.entity.Rule
 import cn.ppps.forwarder.entity.MsgInfo
 import cn.ppps.forwarder.utils.Log
+import cn.ppps.forwarder.utils.BusinessRuntimeCoordinator
+import cn.ppps.forwarder.utils.ForwardDelivery
+import cn.solopay.dispatchBusinessNotification
 import cn.ppps.forwarder.utils.PACKAGE_NAME
 import cn.ppps.forwarder.utils.SettingUtils
-import cn.ppps.forwarder.utils.Worker
-import cn.ppps.forwarder.workers.SendWorker
 import com.google.gson.Gson
 import com.xuexiang.xrouter.utils.TextUtils
 import com.xuexiang.xutil.display.ScreenUtils
@@ -29,31 +26,33 @@ class NotificationService : NotificationListenerService() {
     private val TAG: String = NotificationService::class.java.simpleName
 
     override fun onListenerConnected() {
+        super.onListenerConnected()
         Log.d(TAG, "onListenerConnected")
     }
 
     override fun onListenerDisconnected() {
-        //纯客户端模式
-        if (SettingUtils.enablePureClientMode) return
-
-        //总开关
-        if (!SettingUtils.enableAppNotify) return
-
-        Log.d(TAG, "通知侦听器断开连接 - 请求重新绑定")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            requestRebind(ComponentName(this, NotificationListenerService::class.java))
-        }
+        super.onListenerDisconnected()
+        BusinessRuntimeCoordinator.restoreNotificationListener(this)
     }
 
     @SuppressLint("DiscouragedPrivateApi")
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
+        if (sbn == null || !BusinessRuntimeCoordinator.isUnlocked(this)) return
+        dispatchBusinessNotification(
+            soloPay = { cn.solopay.SoloPayNotificationBridge.onNotificationPosted(applicationContext, sbn) },
+            forwarder = { forwardNotification(sbn) },
+            onFailure = { business, error -> android.util.Log.e(TAG, "$business notification processing failed", error) },
+        )
+    }
+
+    @SuppressLint("DiscouragedPrivateApi")
+    private fun forwardNotification(sbn: StatusBarNotification) {
         try {
-            sbn?.let { cn.solopay.SoloPayNotificationBridge.onNotificationPosted(applicationContext, it) }
             //纯客户端模式
             if (SettingUtils.enablePureClientMode) return
 
             //异常通知跳过
-            val notification = sbn?.notification ?: return
+            val notification = sbn.notification ?: return
             val extras = notification.extras ?: return
 
             //自动消除额外APP通知
@@ -126,15 +125,10 @@ class NotificationService : NotificationListenerService() {
                 }
             }
 
-            val request = OneTimeWorkRequestBuilder<SendWorker>().setInputData(
-                workDataOf(
-                    Worker.SEND_MSG_INFO to Gson().toJson(msgInfo),
-                )
-            ).build()
-            WorkManager.getInstance(applicationContext).enqueue(request)
+            ForwardDelivery.enqueue(applicationContext, Gson().toJson(msgInfo))
 
         } catch (e: Exception) {
-            Log.e(TAG, "Parsing Notification failed: " + e.message.toString())
+            android.util.Log.e(TAG, "SmsForwarder notification processing failed", e)
         }
 
     }
