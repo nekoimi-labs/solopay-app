@@ -2,7 +2,6 @@ package cn.solopay
 
 import android.app.Notification
 import android.content.Context
-import android.os.Build
 import android.util.Log
 import android.service.notification.StatusBarNotification
 import cn.solopay.db.SignalOutboxEntity
@@ -41,18 +40,21 @@ object SoloPayNotificationBridge {
 
         val notification = sbn.notification ?: return
         val extras = notification.extras ?: return
+        // A group summary is not a single payment and can duplicate child events.
+        if (notification.flags and Notification.FLAG_GROUP_SUMMARY != 0) return
 
         val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString().orEmpty()
-        var text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString().orEmpty()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            val bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString().orEmpty()
-            if (bigText.isNotEmpty()) text = bigText
-        }
-        if (text.isEmpty() && notification.tickerText != null) {
-            text = notification.tickerText.toString()
-        }
+        val shortText = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString().orEmpty()
+        val bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString().orEmpty()
+        val textLines = extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES)?.map { it.toString() }.orEmpty()
+        // A generic bigText must not overwrite an amount present in EXTRA_TEXT.
+        val text = PaymentNotificationText.combine(shortText, bigText, textLines, notification.tickerText?.toString().orEmpty())
 
-        val parsed = PaymentNotificationParser.parse(pkg, title, text) ?: return
+        val parsed = PaymentNotificationParser.parse(pkg, title, text)
+        if (parsed == null) {
+            Log.d("SoloPaySync", "Notification skipped: no supported receipt with a unique explicit amount; package=$pkg parser_version=${PaymentNotificationParser.VERSION}")
+            return
+        }
         val extId = externalEventId(pkg, sbn.postTime, title, text)
         if (NotificationDedup.shouldSkip("${binding.sessionId}:$extId")) return
         val postTime = sbn.postTime
@@ -69,7 +71,10 @@ object SoloPayNotificationBridge {
                     val raw = JsonObject()
                     raw.addProperty("title", title.take(200))
                     raw.addProperty("summary", text.take(2000))
-                    raw.addProperty("parser_version", 1)
+                    raw.addProperty("text", shortText.take(2000))
+                    raw.addProperty("big_text", bigText.take(2000))
+                    raw.add("text_lines", gson.toJsonTree(textLines.take(10).map { it.take(500) }))
+                    raw.addProperty("parser_version", PaymentNotificationParser.VERSION)
                     raw.addProperty("post_time", postTime)
 
                     val body = JsonObject()
